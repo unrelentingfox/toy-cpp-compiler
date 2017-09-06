@@ -136,6 +136,17 @@ FILE *saved_yyin;
 "?"                     { return QUEST; }
 %%
 
+int main(int argc, char **argv)
+{
+    if (argc > 1)
+        yyin = fopen(argv[1], "r");
+    else
+        yyin = stdin;
+     
+    yylex();
+
+}
+
 void lexerr(char *s)
 {
 	errors++;

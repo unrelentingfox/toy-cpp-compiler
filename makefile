@@ -10,7 +10,7 @@ CFLAGS=-c -g
 lex.yy.o: lex.yy.c
 	$(CC) $(CFLAGS) lex.yy.c
 
-lex.yy.c: clex.l #cgram.tab.h
+lex.yy.c: clex.l ytab.h #cgram.tab.h
 	flex clex.l
 
 ## phase 2: ignore for now
@@ -25,3 +25,6 @@ lex.yy.c: clex.l #cgram.tab.h
 #	bison -d -v cgram.y
 
 #cgram.tab.h: cgram.tab.c
+
+clean:
+	rm *.o; rm *.yy.*; rm 120++
