@@ -1,3 +1,6 @@
+%option noyywrap
+%x PARSE_COMMENT
+
 O        [0-7]
 D        [0-9]
 L        [a-zA-Z_]
@@ -17,24 +20,41 @@ LIT      \"(\\.|[^\\"])*\"
 #include "120++.h"
 
 struct Token yytoken;
+char *comment = NULL;
 
 void lexerr(char *s);
 void handle_include();
 int set_yytoken(int category);
 void initialize_yytoken();
+void record_comment();
+void single_line_comment();
 
 /* #define DEBUG */
 char *file_name = NULL;
-int line_num = 1;
 int errors;
 int included_iostream = 0;
 FILE *saved_yyin;
 %}
 
 %%
+ /* COMMENTS */
+"/*"                    { 
+                          free(comment);
+                          record_comment();
+                          BEGIN(PARSE_COMMENT); 
+                        }
+<PARSE_COMMENT>"*/"           { 
+                                record_comment();
+                                BEGIN(INITIAL);
+                                return set_yytoken(COMMENT); 
+                              }
+<PARSE_COMMENT>[^*\n]+        { record_comment(); }
+<PARSE_COMMENT>"*"            { record_comment(); }
+<PARSE_COMMENT>\n             { record_comment(); yylineno++; }
+"//".*                  { free(comment); comment = yytext; return set_yytoken(COMMENT); }
 
  /* WHITE SPACE */
-\n                      { line_num++; }
+\n                      { yylineno++; }
 [ \t\f]+                { }
 
  /*TODO: Add the extra reserved words.*/
@@ -181,22 +201,38 @@ FILE *saved_yyin;
 "?"                     { return set_yytoken(QUEST); }
 %%
 
+void record_comment(){
+  char *temp = NULL;
+  if(comment){
+    temp = malloc(sizeof(char)*(strlen(comment)+strlen(yytext)+1));
+    strcpy(temp, comment);
+    strcat(temp, yytext);
+    free(comment);
+    comment = temp;
+  } else {
+    comment = strdup(yytext);
+  }
+}
+
 void initialize_yytoken(){
   yytoken.category = -1;
-  yytoken.text = "";
+  free(yytoken.text);
+  yytoken.text = NULL;
   yytoken.lineno = -1;
-  free(yytoken.filename);
   yytoken.ival = -1;
   yytoken.dval = -1.0;
-  free(yytoken.sval = NULL);
+  free(yytoken.sval);
+  yytoken.sval = NULL;
 }
 
 int set_yytoken(int category) {
   initialize_yytoken();
   yytoken.category = category;
-  yytoken.text = yytext;
-  yytoken.lineno = line_num;
-  yytoken.filename = file_name;
+  if(category == COMMENT)
+    yytoken.text = strdup(comment);
+  else if(yytext)
+    yytoken.text = strdup(yytext);
+  yytoken.lineno = yylineno;
   yytoken.ival = 0;
   yytoken.dval = 0.0;
   yytoken.sval = NULL;
@@ -217,10 +253,10 @@ void lexerr(char *s)
 /*
  * Return 1 if done, 0 if yyin points at more input
  */
-int yywrap()
+/*int yywrap()
 {
    return 1;
-}
+}*/
 
 void handle_include()
 {

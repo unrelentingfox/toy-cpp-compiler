@@ -124,3 +124,4 @@
 #define IDENTIFIER 380
 #define TYPEDEF_NAME 381
 #define BAD_TOKEN 382
+#define COMMENT 383

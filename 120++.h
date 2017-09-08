@@ -20,4 +20,9 @@ struct TokenNode {
 	struct TokenNode *next;
 };
 
-struct TokenNode* createNode(struct Token token);
+struct Token yytoken;
+
+struct TokenNode* createNode(struct Token *token);
+
+void printTokens(struct TokenNode *node);
+// void printToken();
