@@ -65,7 +65,15 @@ void printTokens(struct TokenNode *node) {
 	printf("| Category    Text                Lineno    Filename            Ival/Sval  |\n");
 	printf("|----------------------------------------------------------------------------------|\n");
 	while (node) {
-		printf("| %-12d%-20s%-10d%-10s |\n", node->token.category, node->token.text, node->token.lineno, node->token.filename);
+		printf("| %-20d%-40s%-20d%-20s", node->token.category, node->token.text, node->token.lineno, node->token.filename);
+		if(node->token.category == INT)
+			printf("%-10d |\n", node->token.ival);
+		else if(node->token.category == DOUBLE)
+			printf("%-10d |\n", node->token.dval);
+		else if(node->token.category == STRING)
+			printf("%-10s |\n", node->token.sval);
+		else
+			printf("           |\n");
 		node = node->next;
 	}
 	printf("+----------------------------------------------------------------------------------+\n");

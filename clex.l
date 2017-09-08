@@ -248,9 +248,12 @@ int set_yytoken(int category) {
   else if(yytext)
     yytoken.text = strdup(yytext);
   yytoken.lineno = yylineno;
-  yytoken.ival = 0;
-  yytoken.dval = 0.0;
-  yytoken.sval = NULL;
+  if(category == INT)
+    yytoken.ival = atoi(yytext);
+  if(category == DOUBLE)
+    yytoken.dval = atof(yytext);
+  if(category == STRING)
+    yytoken.sval = strdup(yytext);
   return category;
 }
 
