@@ -19,6 +19,8 @@ LIT      \"(\\.|[^\\"])*\"
 #include "ytab.h"
 #include "120++.h"
 
+struct StackNode *filenameStack;
+
 struct Token yytoken;
 char *comment = NULL;
 
@@ -200,12 +202,23 @@ FILE *saved_yyin;
 "^"                     { return set_yytoken(ER); }
 "|"                     { return set_yytoken(OR); }
 "?"                     { return set_yytoken(QUEST); }
+<<EOF>>                 {
+                          free(yytoken.filename);
+                          //get the filename from the stack
+                          if(filenameStack){
+                            if(filenameStack->filename)
+                              yytoken.filename = strdup(filenameStack->filename);
+                          }
+                          yypop_buffer_state();
+                          if (!YY_CURRENT_BUFFER){
+                            yyterminate();
+                          }
+}
 %%
 
 void record_comment(){
   char *temp = NULL;
   if(comment){
-    printf("%d %d", strlen(comment), strlen(yytext));
     temp = (char*)malloc(sizeof(char)*(strlen(comment)+strlen(yytext)+1));
     strcpy(temp, comment);
     strcat(temp, yytext);
@@ -257,19 +270,33 @@ void lexerr(char *s)
  */
 /*int yywrap()
 {
-   return 1;
+  free(file_name);
+  file_name = strdup("test");
+  yypop_buffer_state();
+  return 1;
 }*/
 
 void handle_include()
 {
-   char *newfilename = malloc(strlen(yytext)+1-strlen("#include \"\""));
+   //char *newfilename = malloc(strlen(yytext)+1-strlen("#include \"\""));
    saved_yyin = yyin;
    char *fname = strchr(yytext, '\"')+1;
    fname[strlen(fname)-1] = '\0';
    // fprintf(stdout, "return incluset_yytoken(n); }
-   yyin = fopen(fname,"r");
-   if (yyin == NULL) {
+   FILE *file = fopen(fname,"r");
+   YY_BUFFER_STATE buffer;
+   if (file == NULL) {
      lexerr("cannot open include file");
      exit(1);
+   } else{
+      // Push the original filename onto a stack.
+      struct StackNode *tempNode = (struct StackNode*)malloc(sizeof(struct StackNode));
+      tempNode->filename = strdup(yytoken.filename);
+      tempNode->next = filenameStack;
+      filenameStack = tempNode;
+      // Set filename to the new name
+      free(yytoken.filename);
+      yytoken.filename = strdup(fname);
+      yypush_buffer_state(yy_create_buffer(file, YY_BUF_SIZE));
    }
 }

@@ -20,6 +20,11 @@ struct TokenNode {
 	struct TokenNode *next;
 };
 
+struct StackNode {
+	char* filename;
+	struct StackNode *next;
+};
+
 struct Token yytoken;
 
 struct TokenNode* createNode(struct Token *token);
