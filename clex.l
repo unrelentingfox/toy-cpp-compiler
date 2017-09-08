@@ -43,14 +43,14 @@ FILE *saved_yyin;
                           record_comment();
                           BEGIN(PARSE_COMMENT); 
                         }
-<PARSE_COMMENT>"*/"           { 
-                                record_comment();
-                                BEGIN(INITIAL);
-                                return set_yytoken(COMMENT); 
-                              }
-<PARSE_COMMENT>[^*\n]+        { record_comment(); }
-<PARSE_COMMENT>"*"            { record_comment(); }
-<PARSE_COMMENT>\n             { record_comment(); yylineno++; }
+<PARSE_COMMENT>"*/"     { 
+                          record_comment();
+                          BEGIN(INITIAL);
+                          return set_yytoken(COMMENT); 
+                        }
+<PARSE_COMMENT>[^*\n]+  { record_comment(); }
+<PARSE_COMMENT>"*"      { record_comment(); }
+<PARSE_COMMENT>\n       { record_comment(); yylineno++; }
 
 "//".*                  { free(comment); comment = strdup(yytext); return set_yytoken(COMMENT); }
 
