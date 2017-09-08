@@ -51,7 +51,8 @@ FILE *saved_yyin;
 <PARSE_COMMENT>[^*\n]+        { record_comment(); }
 <PARSE_COMMENT>"*"            { record_comment(); }
 <PARSE_COMMENT>\n             { record_comment(); yylineno++; }
-"//".*                  { free(comment); comment = yytext; return set_yytoken(COMMENT); }
+
+"//".*                  { free(comment); comment = strdup(yytext); return set_yytoken(COMMENT); }
 
  /* WHITE SPACE */
 \n                      { yylineno++; }
@@ -204,10 +205,11 @@ FILE *saved_yyin;
 void record_comment(){
   char *temp = NULL;
   if(comment){
-    temp = malloc(sizeof(char)*(strlen(comment)+strlen(yytext)+1));
+    printf("%d %d", strlen(comment), strlen(yytext));
+    temp = (char*)malloc(sizeof(char)*(strlen(comment)+strlen(yytext)+1));
     strcpy(temp, comment);
     strcat(temp, yytext);
-    free(comment);
+    //free(comment); //TODO: figure out how to free memory without the double free error.
     comment = temp;
   } else {
     comment = strdup(yytext);
@@ -228,7 +230,7 @@ void initialize_yytoken(){
 int set_yytoken(int category) {
   initialize_yytoken();
   yytoken.category = category;
-  if(category == COMMENT)
+  if(category == COMMENT && comment)
     yytoken.text = strdup(comment);
   else if(yytext)
     yytoken.text = strdup(yytext);
