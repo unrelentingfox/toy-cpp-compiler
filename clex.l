@@ -32,10 +32,8 @@ void record_comment();
 void single_line_comment();
 
 /* #define DEBUG */
-char *file_name = NULL;
 int errors;
 int included_iostream = 0;
-FILE *saved_yyin;
 %}
 
 %%
@@ -209,6 +207,7 @@ FILE *saved_yyin;
                             if(filenameStack->filename)
                               yytoken.filename = strdup(filenameStack->filename);
                           }
+                          yylineno = 1;
                           yypop_buffer_state();
                           if (!YY_CURRENT_BUFFER){
                             yyterminate();
@@ -261,31 +260,15 @@ void lexerr(char *s)
 {
 	errors++;
 
-  fprintf(stderr, "%s: lexical error", s);
-
-	/* to do: add mechanism for reporting file name and line number */
+  fprintf(stderr, "In file (%s) line number (%d) %s: lexical error",yytoken.filename, yylineno, s);
 
   fprintf(stderr, ", token = \"%s\"\n", yytext);
 }
 
-/*
- * Return 1 if done, 0 if yyin points at more input
- */
-/*int yywrap()
-{
-  free(file_name);
-  file_name = strdup("test");
-  yypop_buffer_state();
-  return 1;
-}*/
-
 void handle_include()
 {
-   //char *newfilename = malloc(strlen(yytext)+1-strlen("#include \"\""));
-   saved_yyin = yyin;
    char *fname = strchr(yytext, '\"')+1;
    fname[strlen(fname)-1] = '\0';
-   // fprintf(stdout, "return incluset_yytoken(n); }
    FILE *file = fopen(fname,"r");
    YY_BUFFER_STATE buffer;
    if (file == NULL) {
@@ -297,7 +280,7 @@ void handle_include()
       tempNode->filename = strdup(yytoken.filename);
       tempNode->next = filenameStack;
       filenameStack = tempNode;
-      // Set filename to the new name
+      // Set filename and yyin to the new name
       free(yytoken.filename);
       yytoken.filename = strdup(fname);
       yypush_buffer_state(yy_create_buffer(file, YY_BUF_SIZE));
