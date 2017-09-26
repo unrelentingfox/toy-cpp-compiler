@@ -1,5 +1,8 @@
 *.yy.*
 *.o
 *.test.*
-120
+120bison.h
+120bison.c
+120bison.output
+120flex.c
 *.tab.*
