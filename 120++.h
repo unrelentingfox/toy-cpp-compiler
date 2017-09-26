@@ -22,6 +22,7 @@ struct TokenNode {
 
 struct StackNode {
 	char* filename;
+	int lineno;
 	struct StackNode *next;
 };
 

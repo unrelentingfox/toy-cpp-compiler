@@ -22,7 +22,7 @@ LIT      \"(\\.|[^\\"])*\"
 struct StackNode *filenameStack;
 
 struct Token yytoken;
-char *comment = NULL;
+//char *comment = NULL;
 
 void lexerr(char *s);
 void handle_include();
@@ -38,21 +38,13 @@ int included_iostream = 0;
 
 %%
  /* COMMENTS */
-"/*"                    { 
-                          free(comment);
-                          record_comment();
-                          BEGIN(PARSE_COMMENT); 
-                        }
-<PARSE_COMMENT>"*/"     { 
-                          record_comment();
-                          BEGIN(INITIAL);
-                          return set_yytoken(COMMENT); 
-                        }
-<PARSE_COMMENT>[^*\n]+  { record_comment(); }
-<PARSE_COMMENT>"*"      { record_comment(); }
-<PARSE_COMMENT>\n       { record_comment(); yylineno++; }
+"/*"                    { BEGIN(PARSE_COMMENT); }
+<PARSE_COMMENT>"*/"     { BEGIN(INITIAL); return set_yytoken(COMMENT); }
+<PARSE_COMMENT>[^*\n]+  { }
+<PARSE_COMMENT>"*"      { }
+<PARSE_COMMENT>\n       { yylineno++; }
 
-"//".*                  { free(comment); comment = strdup(yytext); return set_yytoken(COMMENT); }
+"//".*                  { return set_yytoken(COMMENT); }
 
  /* WHITE SPACE */
 \n                      { yylineno++; }
@@ -206,15 +198,21 @@ int included_iostream = 0;
                           if(filenameStack){
                             if(filenameStack->filename)
                               yytoken.filename = strdup(filenameStack->filename);
+                            if(filenameStack->lineno)
+                              yylineno = filenameStack->lineno;
+                            else
+                              yylineno = 1;
                           }
-                          yylineno = 1;
                           yypop_buffer_state();
                           if (!YY_CURRENT_BUFFER){
-                            yyterminate();
+                            return(0);
                           }
 }
 %%
 
+
+// TODO: Remove depricated function if it is no longer needed.
+/*
 void record_comment(){
   char *temp = NULL;
   if(comment){
@@ -227,6 +225,7 @@ void record_comment(){
     comment = strdup(yytext);
   }
 }
+*/
 
 void initialize_yytoken(){
   yytoken.category = -1;
@@ -242,8 +241,8 @@ void initialize_yytoken(){
 int set_yytoken(int category) {
   initialize_yytoken();
   yytoken.category = category;
-  if(category == COMMENT && comment)
-    yytoken.text = strdup(comment);
+  if(category == COMMENT)
+    yytoken.text = strdup("");
   else if(yytext)
     yytoken.text = strdup(yytext);
   yytoken.lineno = yylineno;
@@ -278,11 +277,14 @@ void handle_include()
       // Push the original filename onto a stack.
       struct StackNode *tempNode = (struct StackNode*)malloc(sizeof(struct StackNode));
       tempNode->filename = strdup(yytoken.filename);
+      tempNode->lineno = yylineno;
       tempNode->next = filenameStack;
       filenameStack = tempNode;
       // Set filename and yyin to the new name
       free(yytoken.filename);
       yytoken.filename = strdup(fname);
       yypush_buffer_state(yy_create_buffer(file, YY_BUF_SIZE));
+      // Reset yylineno
+      yylineno = 1;
    }
 }
