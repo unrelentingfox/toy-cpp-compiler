@@ -44,8 +44,9 @@
 %{
 #include <stdio.h>
 #include <string.h>
-#include "nonterm.h"
-#include "tree.h"
+//#include "nonterm.h
+//#include "tree.h"
+#include "120.h"
 
 extern int yylineno;
 extern char *yytext;
