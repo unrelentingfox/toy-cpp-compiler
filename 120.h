@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "ytab.h"
 
 // Token Struct
 typedef struct Token {
@@ -16,10 +15,12 @@ typedef struct Token {
 	/*    the string (less quotes and after escapes) here */
 } Token;
 
-// Leaf Struct
-typedef struct LeafNode{
+// Tree Struct
+typedef struct ASTNode{
 	Token *token;
-} LeafNode;
+	struct ASTNode *left;
+	struct ASTNode *right;
+} ASTNode;
 
 // Token Linked List struct
 typedef struct TokenNode {

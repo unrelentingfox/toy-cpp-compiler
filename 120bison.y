@@ -48,7 +48,7 @@
 //#include "tree.h"
 #include "120.h"
 
-extern int yylineno;
+extern int lineno;
 extern char *yytext;
 #define YYDEBUG 1
 int yydebug=1;
@@ -61,31 +61,31 @@ static void yyerror(char *s);
  */
 %}
 %union {
-  char *text;
-  nodeptr n;
+	ASTNode *astnode;
+	Token *token;
   }
 
-%type < text > identifier
-%type < n > direct_declarator parameter_declaration_clause
-%type < n > parameter_declaration_list parameter_declaration
-%type < n > decl_specifier_seq declarator decl_specifier
-%type < n > storage_class_specifier type_specifier simple_type_specifier
-%type < n > ptr_operator
+%type < astnode > identifier
+%type < astnode > direct_declarator parameter_declaration_clause
+%type < astnode > parameter_declaration_list parameter_declaration
+%type < astnode > decl_specifier_seq declarator decl_specifier
+%type < astnode > storage_class_specifier type_specifier simple_type_specifier
+%type < astnode > ptr_operator
 
-%token IDENTIFIER INTEGER FLOATING CHARACTER STRING
-%token TYPEDEF_NAME NAMESPACE_NAME CLASS_NAME ENUM_NAME TEMPLATE_NAME
+%token < token > IDENTIFIER INTEGER FLOATING CHARACTER STRING
+%token < token > TYPEDEF_NAME NAMESPACE_NAME CLASS_NAME ENUM_NAME TEMPLATE_NAME
 
-%token ELLIPSIS COLONCOLON DOTSTAR ADDEQ SUBEQ MULEQ DIVEQ MODEQ
-%token XOREQ ANDEQ OREQ SL SR SREQ SLEQ EQ NOTEQ LTEQ GTEQ ANDAND OROR
-%token PLUSPLUS MINUSMINUS ARROWSTAR ARROW
+%token < token > ELLIPSIS COLONCOLON DOTSTAR ADDEQ SUBEQ MULEQ DIVEQ MODEQ
+%token < token > XOREQ ANDEQ OREQ SL SR SREQ SLEQ EQ NOTEQ LTEQ GTEQ ANDAND OROR
+%token < token > PLUSPLUS MINUSMINUS ARROWSTAR ARROW
 
-%token ASM AUTO BOOL BREAK CASE CATCH CHAR CLASS CONST CONST_CAST CONTINUE
-%token DEFAULT DELETE DO DOUBLE DYNAMIC_CAST ELSE ENUM EXPLICIT EXPORT EXTERN
-%token FALSE FLOAT FOR FRIEND GOTO IF INLINE INT LONG MUTABLE NAMESPACE NEW
-%token OPERATOR PRIVATE PROTECTED PUBLIC REGISTER REINTERPRET_CAST RETURN
-%token SHORT SIGNED SIZEOF STATIC STATIC_CAST STRUCT SWITCH TEMPLATE THIS
-%token THROW TRUE TRY TYPEDEF TYPEID TYPENAME UNION UNSIGNED USING VIRTUAL
-%token VOID VOLATILE WCHAR_T WHILE
+%token < token > ASM AUTO BOOL BREAK CASE CATCH CHAR CLASS CONST CONST_CAST CONTINUE
+%token < token > DEFAULT DELETE DO DOUBLE DYNAMIC_CAST ELSE ENUM EXPLICIT EXPORT EXTERN
+%token < token > FALSE FLOAT FOR FRIEND GOTO IF INLINE INT LONG MUTABLE NAMESPACE NEW
+%token < token > OPERATOR PRIVATE PROTECTED PUBLIC REGISTER REINTERPRET_CAST RETURN
+%token < token > SHORT SIGNED SIZEOF STATIC STATIC_CAST STRUCT SWITCH TEMPLATE THIS
+%token < token > THROW TRUE TRY TYPEDEF TYPEID TYPENAME UNION UNSIGNED USING VIRTUAL
+%token < token > VOID VOLATILE WCHAR_T WHILE
 
 %start translation_unit
 
@@ -687,7 +687,7 @@ direct_declarator:
 	| direct_declarator '(' parameter_declaration_clause ')' cv_qualifier_seq exception_specification { $$ = NULL; }
 	| direct_declarator '(' parameter_declaration_clause ')' cv_qualifier_seq { $$ = NULL; }
 	| direct_declarator '(' parameter_declaration_clause ')' exception_specification { $$ = NULL; }
-	| direct_declarator '(' parameter_declaration_clause ')' { $$ = alctree(DIRECTDECLARATOR_5, 2, $1, $3); }
+	//| direct_declarator '(' parameter_declaration_clause ')' { $$ = alctree(DIRECTDECLARATOR_5, 2, $1, $3); }
 	| CLASS_NAME '(' parameter_declaration_clause ')' { $$ = NULL; }
 	| CLASS_NAME COLONCOLON declarator_id '(' parameter_declaration_clause ')' { $$ = NULL; }
 	| CLASS_NAME COLONCOLON CLASS_NAME '(' parameter_declaration_clause ')' { $$ = NULL; }

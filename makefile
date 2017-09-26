@@ -1,31 +1,25 @@
-CC=gcc
-CFLAGS=-c -g
+YACC=bison
+LEX=flex
+CC=cc
 
-120: 120.o lex.yy.o
-	$(CC) -o 120 120.o lex.yy.o
+all: 120
 
-120.o: 120.c
-	$(CC) $(CFLAGS) 120.c
+.c.o:
+	$(CC) -c $<
 
-lex.yy.o: lex.yy.c
-	$(CC) $(CFLAGS) lex.yy.c
+120: 120bison.o 120flex.o
+	cc -o 120 120bison.o 120flex.o
 
-lex.yy.c: 120flex.l ytab.h #cgram.tab.h
-	flex 120flex.l
+120bison.c 120bison.h: 120bison.y
+	$(YACC) -dt --verbose 120bison.y
+	mv -f 120bison.tab.c 120bison.c
+	mv -f 120bison.tab.h 120bison.h
 
-## phase 2: ignore for now
+120flex.c: 120flex.l
+	$(LEX) -t 120flex.l >120flex.c
 
-#c: main.o cgram.tab.o lex.yy.o
-#	cc -o c main.o cgram.tab.o lex.yy.o
-
-#cgram.tab.o: cgram.tab.c
-#	cc -c -DYYDEBUG cgram.tab.c
-
-#cgram.tab.c: cgram.y
-#	bison -d -v cgram.y
-
-#cgram.tab.h: cgram.tab.c
+120flex.o: 120bison.h
 
 clean:
-	rm *.o; rm *.yy.*; rm 120
-	
+	rm -f 120 *.o
+	rm -f 120flex.c 120bison.c 120bison.h

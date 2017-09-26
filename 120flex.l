@@ -42,13 +42,13 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "120.h"
-#include "ytab.h"
+#include "120bison.h"
 
 /*
  * Debug info 
  */
 int errors;
-int yylineno;
+int lineno;
 int saw_iostream, saw_string, saw_std;
 
 StackNode *filenameStack;
@@ -76,7 +76,7 @@ stringtext           ([^"])|(\\.)
 
 %%
 
-"\n"                 { ++yylineno; }
+"\n"                 { ++lineno; }
 [\t\f\v\r ]+         { /* Ignore whitespace. */ }
 
 "/*"                 { skip_comment(); }
@@ -243,9 +243,9 @@ stringtext           ([^"])|(\\.)
                             if(filenameStack->filename)
                               yytoken.filename = strdup(filenameStack->filename);
                             if(filenameStack->lineno)
-                              yylineno = filenameStack->lineno;
+                              lineno = filenameStack->lineno;
                             else
-                              yylineno = 1;
+                              lineno = 1;
                           }
                           yypop_buffer_state();
                           if (!YY_CURRENT_BUFFER){
@@ -253,7 +253,7 @@ stringtext           ([^"])|(\\.)
                           }
 }
 
-. { fprintf(stderr, "%d: unexpected character `%c'\n", yylineno, yytext[0]); }
+. { fprintf(stderr, "%d: unexpected character `%c'\n", lineno, yytext[0]); }
 
 %%
 
@@ -270,7 +270,7 @@ static void skip_comment(void)
 
    while (c2 != EOF && !(c1 == '*' && c2 == '/')) {
       if (c1 == '\n')
-         ++yylineno;
+         ++lineno;
       c1 = c2;
       c2 = input();
    }
@@ -285,7 +285,7 @@ static void skip_until_eol(void)
 
    while ((c = input()) != EOF && c != '\n')
       ;
-   ++yylineno;
+   ++lineno;
 }
 
 /*
@@ -355,7 +355,7 @@ static int set_yytoken(int category) {
   yytoken.category = category;
   if(yytext)
     yytoken.text = strdup(yytext);
-  yytoken.lineno = yylineno;
+  yytoken.lineno = lineno;
   if(category == INT)
     yytoken.ival = atoi(yytext);
   if(category == DOUBLE)
@@ -373,7 +373,7 @@ static void lexerr(char *s)
 {
    errors++;
 
-  fprintf(stderr, "In file (%s) line number (%d) %s: lexical error",yytoken.filename, yylineno, s);
+  fprintf(stderr, "In file (%s) line number (%d) %s: lexical error",yytoken.filename, lineno, s);
 
   fprintf(stderr, ", token = \"%s\"\n", yytext);
 }
@@ -394,14 +394,14 @@ static void handle_include()
       // Push the original filename onto a stack.
       StackNode *tempNode = (StackNode*)malloc(sizeof(StackNode));
       tempNode->filename = strdup(yytoken.filename);
-      tempNode->lineno = yylineno;
+      tempNode->lineno = lineno;
       tempNode->next = filenameStack;
       filenameStack = tempNode;
       // Set filename and yyin to the new name
       free(yytoken.filename);
       yytoken.filename = strdup(fname);
       yypush_buffer_state(yy_create_buffer(file, YY_BUF_SIZE));
-      // Reset yylineno
-      yylineno = 1;
+      // Reset lineno
+      lineno = 1;
    }
 }
