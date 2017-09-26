@@ -17,12 +17,11 @@ LIT      \"(\\.|[^\\"])*\"
 #include <stdlib.h>
 #include <ctype.h>
 #include "ytab.h"
-#include "120++.h"
+#include "120.h"
 
-struct StackNode *filenameStack;
+StackNode *filenameStack;
 
-struct Token yytoken;
-//char *comment = NULL;
+Token yytoken;
 
 void lexerr(char *s);
 void handle_include();
@@ -275,7 +274,7 @@ void handle_include()
      exit(1);
    } else{
       // Push the original filename onto a stack.
-      struct StackNode *tempNode = (struct StackNode*)malloc(sizeof(struct StackNode));
+      StackNode *tempNode = (StackNode*)malloc(sizeof(StackNode));
       tempNode->filename = strdup(yytoken.filename);
       tempNode->lineno = yylineno;
       tempNode->next = filenameStack;

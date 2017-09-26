@@ -4,7 +4,8 @@
 #include <ctype.h>
 #include "ytab.h"
 
-struct Token {
+// Token Struct
+typedef struct Token {
 	int category;   /* the integer code returned by yylex */
 	char *text;     /* the actual string (lexeme) matched */
 	int lineno;     /* the line number on which the token occurs */
@@ -13,22 +14,27 @@ struct Token {
 	double dval;	   /* for real constants, store binary value here */
 	char *sval;     /* for string constants, malloc space, de-escape, store */
 	/*    the string (less quotes and after escapes) here */
-};
+} Token;
 
-struct TokenNode {
+// Leaf Struct
+typedef struct LeafNode{
+	Token *token;
+} LeafNode;
+
+// Token Linked List struct
+typedef struct TokenNode {
 	struct Token token;
 	struct TokenNode *next;
-};
+} TokenNode;
 
-struct StackNode {
+// Filename Stack struct
+typedef struct StackNode {
 	char* filename;
 	int lineno;
 	struct StackNode *next;
-};
+} StackNode;
 
-struct Token yytoken;
+TokenNode* createNode(Token *token);
 
-struct TokenNode* createNode(struct Token *token);
-
-void printTokens(struct TokenNode *node);
+void printTokens(TokenNode *node);
 // void printToken();
