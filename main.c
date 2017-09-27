@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
 				lineno = 1;
 
 				if(yyparse()){
-					printf("ERROR FUCK");
+					printf("ERROR");
 				}
 			}
 		}

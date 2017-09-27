@@ -55,10 +55,6 @@ int yydebug=1;
 
 static void yyerror(char *s);
 
-
-/*
- * warning, this %union is not what you need, it is for demonstration purposes.
- */
 %}
 %union {
 	ASTNode *astnode;
@@ -1201,5 +1197,5 @@ type_id_list_opt:
 static void
 yyerror(char *s)
 {
-	fprintf(stderr, "%d: %s\n", lineno, s);
+	fprintf(stderr, "!! %s !!: in \"%s\" on line %d. Token: %s\n",s ,yylval.token->filename,yylval.token->lineno, yylval.token->text);
 }

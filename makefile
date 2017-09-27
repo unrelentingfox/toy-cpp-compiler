@@ -15,6 +15,7 @@ all: $(SOURCES) $(EXECUTABLE)
 # Build the EXECUTABLE from the objects
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(OBJECTS) -o $@
+	mv $(EXECUTABLE) test
 
 # Build all .o files from all .c files
 $(OBJECTS): $(SOURCES)
