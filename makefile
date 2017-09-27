@@ -2,24 +2,35 @@ YACC=bison
 LEX=flex
 CC=cc
 
-all: 120
+BISONFILE=bison
+FLEXFILE=flex
 
-.c.o:
-	$(CC) -c $<
+SOURCES=$(BISONFILE).c $(FLEXFILE).c main.c
+HEADERS=$(BISONFILE).h structs.h
+OBJECTS=$(SOURCES:.c=.o)
+EXECUTABLE=120
 
-120: 120bison.o 120flex.o
-	cc -o 120 120bison.o 120flex.o
+all: $(SOURCES) $(EXECUTABLE)
 
-120bison.c 120bison.h: 120bison.y
-	$(YACC) -dt --verbose 120bison.y
-	mv -f 120bison.tab.c 120bison.c
-	mv -f 120bison.tab.h 120bison.h
+# Build the EXECUTABLE from the objects
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) $(OBJECTS) -o $@
 
-120flex.c: 120flex.l
-	$(LEX) -t 120flex.l >120flex.c
+# Build all .o files from all .c files
+$(OBJECTS): $(SOURCES)
+	$(CC) -c $(SOURCES)
 
-120flex.o: 120bison.h
+# Create the bison.c and bison.h files
+$(BISONFILE).c $(BISONFILE).h: $(BISONFILE).y
+	$(YACC) -dt --verbose $<
+	mv -f $(BISONFILE).tab.c $(BISONFILE).c
+	mv -f $(BISONFILE).tab.h $(BISONFILE).h
 
+# Create the flex.c file
+$(FLEXFILE:.l=.c): $(FELXFILE).l
+	$(LEX) -t $(FLEXFILE).l >$(FLEXFILE).c
+
+# Remove generated files
 clean:
-	rm -f 120 *.o
-	rm -f 120flex.c 120bison.c 120bison.h
+	rm -f $(EXECUTABLE) $(OBJECTS)
+	rm -f $(FLEXFILE).c $(BISONFILE).c $(BISONFILE).h
