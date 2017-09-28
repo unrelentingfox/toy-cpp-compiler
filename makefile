@@ -5,8 +5,8 @@ CC=cc
 BISONFILE=bison
 FLEXFILE=flex
 
-SOURCES=$(BISONFILE).c $(FLEXFILE).c main.c
-HEADERS=$(BISONFILE).h structs.h
+SOURCES=$(BISONFILE).tab.c $(FLEXFILE).c main.c tree.c
+HEADERS=$(BISONFILE).tab.h token.h tree.h
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=120
 
@@ -22,10 +22,9 @@ $(OBJECTS): $(SOURCES)
 	$(CC) -c $(SOURCES)
 
 # Create the bison.c and bison.h files
-$(BISONFILE).c $(BISONFILE).h: $(BISONFILE).y
+$(BISONFILE).tab.c $(BISONFILE).tab.h: $(BISONFILE).y
 	$(YACC) -dt --verbose $<
-	mv -f $(BISONFILE).tab.c $(BISONFILE).c
-	mv -f $(BISONFILE).tab.h $(BISONFILE).h
+
 
 # Create the flex.c file
 $(FLEXFILE:.l=.c): $(FELXFILE).l
@@ -34,4 +33,4 @@ $(FLEXFILE:.l=.c): $(FELXFILE).l
 # Remove generated files
 clean:
 	rm -f $(EXECUTABLE) $(OBJECTS)
-	rm -f $(FLEXFILE).c $(BISONFILE).c $(BISONFILE).h
+	rm -f $(FLEXFILE).c $(BISONFILE).tab.c $(BISONFILE).tab.h

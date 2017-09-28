@@ -41,8 +41,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "structs.h"
-#include "bison.h"
+#include "token.h"
+#include "bison.tab.h"
 
 /*
  * Debug info 
@@ -52,10 +52,22 @@ int errors;
 int lineno;
 int saw_iostream, saw_string, saw_std;
 
-StackNode *filenameStack;
+
+// Filename Stack struct
+typedef struct FileNameStack {
+  char* filename;
+  int lineno;
+  struct FileNameStack *next;
+} FileNameStack;
+
+FileNameStack *filenameStack;
+
+int typenametable_insert(char *s, int cat);
+int typenametable_lookup(char *s);
 
 static void lexerr(char *s);
 static void handle_include();
+static void initialize_yylval();
 static int set_yylval(int category);
 static void record_comment();
 static void single_line_comment();
@@ -332,10 +344,20 @@ check_identifier(char *s)
    return typenametable_lookup(s);
 }
 
-static int set_yylval(int category) {
-  // Set new Token
-  yylval.token = (Token*)malloc(sizeof(Token));
+// Reset the yylval token values before you set new ones.
+static void initialize_yylval(){
+  yylval.token->category = -1;
+  free(yylval.token->text);
+  yylval.token->text = NULL;
+  yylval.token->lineno = -1;
+  yylval.token->ival = -1;
+  yylval.token->dval = -1.0;
+  free(yylval.token->sval);
+  yylval.token->sval = NULL;
+}
 
+static int set_yylval(int category) {
+  initialize_yylval();
   yylval.token->filename = strdup(filename);
   yylval.token->category = category;
   if(yytext)
@@ -379,7 +401,7 @@ static void handle_include()
      exit(1);
    } else{
       // Push the original filename onto a stack.
-      StackNode *tempNode = (StackNode*)malloc(sizeof(StackNode));
+      FileNameStack *tempNode = (FileNameStack*)malloc(sizeof(FileNameStack));
       tempNode->filename = strdup(filename);
       tempNode->lineno = lineno;
       tempNode->next = filenameStack;

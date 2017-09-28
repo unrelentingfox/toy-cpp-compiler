@@ -1,7 +1,5 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
+#ifndef TOKEN_H
+#define TOKEN_H
 
 // Token Struct
 typedef struct Token {
@@ -15,27 +13,4 @@ typedef struct Token {
 	/*    the string (less quotes and after escapes) here */
 } Token;
 
-// Tree Struct
-typedef struct ASTNode{
-	Token *token;
-	struct ASTNode *left;
-	struct ASTNode *right;
-} ASTNode;
-
-// Token Linked List struct
-typedef struct TokenNode {
-	struct Token token;
-	struct TokenNode *next;
-} TokenNode;
-
-// Filename Stack struct
-typedef struct StackNode {
-	char* filename;
-	int lineno;
-	struct StackNode *next;
-} StackNode;
-
-TokenNode* createNode(Token *token);
-
-void printTokens(TokenNode *node);
-// void printToken();
+#endif

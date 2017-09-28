@@ -1,8 +1,6 @@
 *.yy.*
 *.o
 *.test.*
-bison.h
-bison.c
 bison.output
 flex.c
 *.tab.*
