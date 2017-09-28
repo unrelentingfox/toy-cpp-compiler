@@ -47,7 +47,7 @@ extern int yylex(void);
 
 #include <stdio.h>
 #include <string.h>
-//#include "nonterm.h
+#include "nonterms.h"
 #include "token.h"
 #include "tree.h"
 
@@ -71,22 +71,132 @@ static void yyerror(char *s);
 %type < treenode > storage_class_specifier type_specifier simple_type_specifier
 %type < treenode > ptr_operator
 
-%token < token > IDENTIFIER INTEGER FLOATING CHARACTER STRING
-%token < token > TYPEDEF_NAME NAMESPACE_NAME CLASS_NAME ENUM_NAME TEMPLATE_NAME
-
-%token < token > ELLIPSIS COLONCOLON DOTSTAR ADDEQ SUBEQ MULEQ DIVEQ MODEQ
-%token < token > XOREQ ANDEQ OREQ SL SR SREQ SLEQ EQ NOTEQ LTEQ GTEQ ANDAND OROR
-%token < token > PLUSPLUS MINUSMINUS ARROWSTAR ARROW
-
-%token < token > ASM AUTO BOOL BREAK CASE CATCH CHAR CLASS CONST CONST_CAST CONTINUE
-%token < token > DEFAULT DELETE DO DOUBLE DYNAMIC_CAST ELSE ENUM EXPLICIT EXPORT EXTERN
-%token < token > FALSE FLOAT FOR FRIEND GOTO IF INLINE INT LONG MUTABLE NAMESPACE NEW
-%token < token > OPERATOR PRIVATE PROTECTED PUBLIC REGISTER REINTERPRET_CAST RETURN
-%token < token > SHORT SIGNED SIZEOF STATIC STATIC_CAST STRUCT SWITCH TEMPLATE THIS
-%token < token > THROW TRUE TRY TYPEDEF TYPEID TYPENAME UNION UNSIGNED USING VIRTUAL
-%token < token > VOID VOLATILE WCHAR_T WHILE
-
 %start translation_unit
+
+// nonterms not yet implemented in lexor
+%token < token > CLASS_NAME
+%token < token > ENUM_NAME
+%token < token > IDENTIFIER
+%token < token > NAMESPACE_NAME
+%token < token > TEMPLATE_NAME
+%token < token > TYPEDEF_NAME
+
+%token < token > '{'
+%token < token > '}'
+%token < token > '['
+%token < token > ']'
+%token < token > '('
+%token < token > ')'
+%token < token > ';'
+%token < token > ':'
+%token < token > ELLIPSIS
+%token < token > '?'
+%token < token > COLONCOLON
+%token < token > '.'
+%token < token > DOTSTAR
+%token < token > '+'
+%token < token > '-'
+%token < token > '*'
+%token < token > '/'
+%token < token > '%'
+%token < token > '^'
+%token < token > '&'
+%token < token > '|'
+%token < token > '~'
+%token < token > '!'
+%token < token > '='
+%token < token > '<'
+%token < token > '>'
+%token < token > ADDEQ
+%token < token > SUBEQ
+%token < token > MULEQ
+%token < token > DIVEQ
+%token < token > MODEQ
+%token < token > XOREQ
+%token < token > ANDEQ
+%token < token > OREQ
+%token < token > SL
+%token < token > SR
+%token < token > SLEQ
+%token < token > SREQ
+%token < token > EQ
+%token < token > NOTEQ
+%token < token > LTEQ
+%token < token > GTEQ
+%token < token > ANDAND
+%token < token > OROR
+%token < token > PLUSPLUS
+%token < token > MINUSMINUS
+%token < token > ','
+%token < token > ARROWSTAR
+%token < token > ARROW
+%token < token > ASM
+%token < token > AUTO
+%token < token > BOOL
+%token < token > BREAK
+%token < token > CASE
+%token < token > CATCH
+%token < token > CHAR
+%token < token > CLASS
+%token < token > CONST
+%token < token > CONST_CAST
+%token < token > CONTINUE
+%token < token > DEFAULT
+%token < token > DELETE
+%token < token > DO
+%token < token > DOUBLE
+%token < token > DYNAMIC_CAST
+%token < token > ELSE
+%token < token > ENUM
+%token < token > EXPLICIT
+%token < token > EXPORT
+%token < token > EXTERN
+%token < token > FALSE
+%token < token > FLOAT
+%token < token > FOR
+%token < token > FRIEND
+%token < token > GOTO
+%token < token > IF
+%token < token > INLINE
+%token < token > INT
+%token < token > LONG
+%token < token > MUTABLE
+%token < token > NAMESPACE
+%token < token > NEW
+%token < token > OPERATOR
+%token < token > PRIVATE
+%token < token > PROTECTED
+%token < token > PUBLIC
+%token < token > REGISTER
+%token < token > REINTERPRET_CAST
+%token < token > RETURN
+%token < token > SHORT
+%token < token > SIGNED
+%token < token > SIZEOF
+%token < token > STATIC
+%token < token > STATIC_CAST
+%token < token > STRUCT
+%token < token > SWITCH
+%token < token > TEMPLATE
+%token < token > THIS
+%token < token > THROW
+%token < token > TRUE
+%token < token > TRY
+%token < token > TYPEDEF
+%token < token > TYPEID
+%token < token > TYPENAME
+%token < token > UNION
+%token < token > UNSIGNED
+%token < token > USING
+%token < token > VIRTUAL
+%token < token > VOID
+%token < token > VOLATILE
+%token < token > WCHAR_T
+%token < token > WHILE
+%token < token > INTEGER
+%token < token > FLOATING
+%token < token > CHARACTER
+%token < token > STRING
 
 %%
 
