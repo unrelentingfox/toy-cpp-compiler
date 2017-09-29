@@ -61,7 +61,6 @@ static void yyerror(char *s);
 %}
 %union {
   struct TreeNode *treenode;
-  Token *token;
   }
 
 %type < treenode > identifier
@@ -309,7 +308,7 @@ qualified_id:
 
 nested_name_specifier:
   class_name COLONCOLON nested_name_specifier
-  namespace_name COLONCOLON nested_name_specifier
+  | namespace_name COLONCOLON nested_name_specifier
   | class_name COLONCOLON
   | namespace_name COLONCOLON
   ;
@@ -472,7 +471,7 @@ logical_or_expression:
 
 conditional_expression:
   logical_or_expression
-  | logical_or_expression  '?' expression ':' assignment_expression
+  | logical_or_expression '?' expression ':' assignment_expression
   ;
 
 assignment_expression:
@@ -1310,5 +1309,5 @@ type_id_list_opt:
 static void
 yyerror(char *s)
 {
-  fprintf(stderr, "!! %s !!: in \"%s\" on line %d. Token: %s\n",s ,yylval.token->filename,yylval.token->lineno, yylval.token->text);
+  fprintf(stderr, "!! %s !!: in \"%s\" on line %d. Token: %s\n",s ,yylval.treenode->token->filename,yylval.treenode->token->lineno, yylval.treenode->token->text);
 }

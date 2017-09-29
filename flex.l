@@ -43,6 +43,7 @@
 #include <ctype.h>
 #include "token.h"
 #include "bison.tab.h"
+#include "tree.h"
 
 /*
  * Debug info 
@@ -346,31 +347,41 @@ check_identifier(char *s)
 
 // Reset the yylval token values before you set new ones.
 static void initialize_yylval(){
-  yylval.token->category = -1;
-  free(yylval.token->text);
-  yylval.token->text = NULL;
-  yylval.token->lineno = -1;
-  yylval.token->ival = -1;
-  yylval.token->dval = -1.0;
-  free(yylval.token->sval);
-  yylval.token->sval = NULL;
+  free(yylval.treenode);
+  yylval.treenode = (TreeNode*)calloc(1,sizeof(TreeNode));
+  //yylval.token->category = -1;
+  //free(yylval.token->text);
+  //yylval.token->text = NULL;
+  //yylval.token->lineno = -1;
+  //yylval.token->ival = -1;
+  //yylval.token->dval = -1.0;
+  //free(yylval.token->sval);
+  //yylval.token->sval = NULL;
 }
 
 static int set_yylval(int category) {
   initialize_yylval();
-  yylval.token->filename = strdup(filename);
-  yylval.token->category = category;
+  yylval.treenode->leaf = true;
+  yylval.treenode->token = (Token*)malloc(sizeof(Token));
+  yylval.treenode->token->filename = strdup(filename);
+  yylval.treenode->token->category = category;
   if(yytext)
-    yylval.token->text = strdup(yytext);
+    yylval.treenode->token->text = strdup(yytext);
   else
-    yylval.token->text = strdup("");
-  yylval.token->lineno = lineno;
+    yylval.treenode->token->text = strdup("");
+  yylval.treenode->token->lineno = lineno;
   if(category == INT)
-    yylval.token->ival = atoi(yytext);
+    yylval.treenode->token->ival = atoi(yytext);
+  else
+    yylval.treenode->token->ival = -1;
   if(category == DOUBLE)
-    yylval.token->dval = atof(yytext);
+    yylval.treenode->token->dval = atof(yytext);
+  else
+    yylval.treenode->token->dval = -1;
   if(category == STRING)
-    yylval.token->sval = strdup(yytext);
+    yylval.treenode->token->sval = strdup(yytext);
+  else
+    yylval.treenode->token->sval = strdup("");
   return category;
 }
 
@@ -382,7 +393,7 @@ static void lexerr(char *s)
 {
    errors++;
 
-  fprintf(stderr, "In file (%s) line number (%d) %s: lexical error",yylval.token->filename, lineno, s);
+  fprintf(stderr, "In file (%s) line number (%d) %s: lexical error",yylval.treenode->token->filename, lineno, s);
 
   fprintf(stderr, ", token = \"%s\"\n", yytext);
 }
