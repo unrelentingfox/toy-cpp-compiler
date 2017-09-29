@@ -1,6 +1,7 @@
 YACC=bison
 LEX=flex
 CC=cc
+OPTS=-g
 
 BISONFILE=bison
 FLEXFILE=flex
@@ -14,12 +15,11 @@ all: $(SOURCES) $(EXECUTABLE)
 
 # Build the EXECUTABLE from the objects
 $(EXECUTABLE): $(OBJECTS)
-	$(CC) $(OBJECTS) -o $@
-	mv $(EXECUTABLE) test
+	$(CC) $(OPTS) $(OBJECTS) -o $@
 
 # Build all .o files from all .c files
 $(OBJECTS): $(SOURCES)
-	$(CC) -c $(SOURCES)
+	$(CC) -c -g $(SOURCES)
 
 # Create the bison.c and bison.h files
 $(BISONFILE).tab.c $(BISONFILE).tab.h: $(BISONFILE).y

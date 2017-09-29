@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
       }
     }
   }
-  printf("\nPrinting tree\n");
+
   printTree(astRoot, 0);
   return 0;
 }

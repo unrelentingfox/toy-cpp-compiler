@@ -51,16 +51,18 @@ TreeNode *newTreeNode(int nonterm, int cnum, ...) {
 int printTree(TreeNode *node, int depth) {
   int i;
 
-  if(node->cnum > 0)
+  if (node && node->cnum > 0) {
     printf("%*s %s: %d\n", depth * 2, " ", humanReadable(node->nonterm), node->cnum);
-  else
-    printf("%*s LEAF:\"%s\"\n", depth * 2, " ", node->token->text);
 
-  for (i = 0; i < node->cnum; i++) {
-    if (node->children[i]) {
-      printTree(node->children[i], depth + 1);
+    for (i = 0; i < node->cnum; i++) {
+      if (node->children[i]) {
+        printTree(node->children[i], depth + 1);
+      }
     }
+  } else if (node) {
+    printf("%*s LEAF:\"%s\"\n", depth * 2, " ", node->token->text);
   }
+
 }
 
 
