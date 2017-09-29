@@ -68,7 +68,6 @@ int typenametable_lookup(char *s);
 
 static void lexerr(char *s);
 static void handle_include();
-static void initialize_yylval();
 static int set_yylval(int category);
 static void record_comment();
 static void single_line_comment();
@@ -345,22 +344,10 @@ check_identifier(char *s)
    return typenametable_lookup(s);
 }
 
-// Reset the yylval token values before you set new ones.
-static void initialize_yylval(){
+static int set_yylval(int category) {
   free(yylval.treenode);
   yylval.treenode = (TreeNode*)calloc(1,sizeof(TreeNode));
-  //yylval.token->category = -1;
-  //free(yylval.token->text);
-  //yylval.token->text = NULL;
-  //yylval.token->lineno = -1;
-  //yylval.token->ival = -1;
-  //yylval.token->dval = -1.0;
-  //free(yylval.token->sval);
-  //yylval.token->sval = NULL;
-}
 
-static int set_yylval(int category) {
-  initialize_yylval();
   yylval.treenode->leaf = true;
   yylval.treenode->token = (Token*)malloc(sizeof(Token));
   yylval.treenode->token->filename = strdup(filename);
