@@ -3,9 +3,9 @@
 char *humanReadable(int nonterm) {
 
   switch (nonterm) {
-  case 0:
-    return strdup("Terminal");
-    break;
+  // case 0:
+  //   return strdup("Terminal");
+  //   break;
   case typedef_name:
     return strdup("typedef_name");
     break;

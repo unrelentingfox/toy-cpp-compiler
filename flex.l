@@ -221,7 +221,7 @@ stringtext           ([^"])|(\\.)
 "wchar_t"            { return set_yylval(WCHAR_T); }
 "while"              { return set_yylval(WHILE); }
 
-[a-zA-Z_][a-zA-Z_0-9]*                 { return check_identifier(yytext); }
+[a-zA-Z_][a-zA-Z_0-9]*                 { return set_yylval(check_identifier(yytext)); }
 
 "0"[xX][0-9a-fA-F]+{intsuffix}?        { return set_yylval(INTEGER); }
 "0"[0-7]+{intsuffix}?                  { return set_yylval(INTEGER); }

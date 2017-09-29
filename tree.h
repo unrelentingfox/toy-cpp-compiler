@@ -15,7 +15,7 @@ typedef struct TreeNode {
   bool leaf;                      // tell whether this is a leaf note or not.
   int nonterm;
   int cnum;                       // How many children
-  struct TreeNode *children[100];   // Array of child nodes size from 0..cnum
+  struct TreeNode *children[10];   // Array of child nodes size from 0..cnum
   Token *token;                    // The token if its a leaf
 } TreeNode;
 

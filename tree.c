@@ -20,6 +20,7 @@ TreeNode *newTreeNode(int nonterm, int cnum, ...) {
       }
       va_end(ap);
       ptr->nonterm = nonterm;
+      printf("%s is a parent of %s\n", humanReadable(nonterm), humanReadable(ptr->nonterm));
 
     } else {
       // create a new treenode and set the children if there are more than 1
@@ -35,8 +36,10 @@ TreeNode *newTreeNode(int nonterm, int cnum, ...) {
 
       // iterate through children and add them to the new treeNode
       va_start(ap, cnum);
-      for (i = 0; i < cnum; i++)
+      for (i = 0; i < cnum; i++) {
         ptr->children[i] = va_arg(ap, TreeNode *);
+      }
+
       va_end(ap);
 
     }
@@ -48,7 +51,10 @@ TreeNode *newTreeNode(int nonterm, int cnum, ...) {
 int printTree(TreeNode *node, int depth) {
   int i;
 
-  printf("%*s %s: %d\n", depth * 2, " ", humanReadable(node->nonterm), node->cnum);
+  if(node->cnum > 0)
+    printf("%*s %s: %d\n", depth * 2, " ", humanReadable(node->nonterm), node->cnum);
+  else
+    printf("%*s LEAF:\"%s\"\n", depth * 2, " ", node->token->text);
 
   for (i = 0; i < node->cnum; i++) {
     if (node->children[i]) {
