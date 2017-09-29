@@ -1,12 +1,17 @@
-#define typedef_name 1001
-#define class_name 1002
-#define template_name 1003
-#define identifier 1004
-#define literal 1005
-#define integer_literal 1006
-#define character_literal 1007
-#define floating_literal 1008
-#define string_literal 1009
+#ifndef NONTERM_H
+#define NONTERM_H
+
+#include <string.h>
+
+#define typedef_name 10001
+#define class_name 10002
+#define template_name 10003
+#define identifier 10004
+#define literal 10005
+#define integer_literal 10006
+#define character_literal 10007
+#define floating_literal 10008
+#define string_literal 10009
 #define boolean_literal 10010
 #define translation_unit 10011
 #define primary_expression 10012
@@ -169,3 +174,7 @@
 #define handler_seq_opt 10169
 #define assignment_expression_opt 10170
 #define type_id_list_opt 10171
+
+char *humanReadable(int nonterm);
+
+#endif

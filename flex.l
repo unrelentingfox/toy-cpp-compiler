@@ -345,10 +345,14 @@ check_identifier(char *s)
 }
 
 static int set_yylval(int category) {
+  // Create TreeNode leaf node.
   free(yylval.treenode);
   yylval.treenode = (TreeNode*)calloc(1,sizeof(TreeNode));
-
   yylval.treenode->leaf = true;
+  yylval.treenode->nonterm = 0;
+  yylval.treenode->cnum = 0;
+
+  // Create the Token to put in the leaf node.
   yylval.treenode->token = (Token*)malloc(sizeof(Token));
   yylval.treenode->token->filename = strdup(filename);
   yylval.treenode->token->category = category;
@@ -369,6 +373,10 @@ static int set_yylval(int category) {
     yylval.treenode->token->sval = strdup(yytext);
   else
     yylval.treenode->token->sval = strdup("");
+
+  //debug help
+  printf("(%s) file: %s, line: %d ******************************************************\n", yytext, filename, lineno);
+
   return category;
 }
 

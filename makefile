@@ -5,8 +5,8 @@ CC=cc
 BISONFILE=bison
 FLEXFILE=flex
 
-SOURCES=$(BISONFILE).tab.c $(FLEXFILE).c main.c tree.c
-HEADERS=$(BISONFILE).tab.h token.h tree.h
+SOURCES=$(BISONFILE).tab.c $(FLEXFILE).c main.c tree.c nonterm.c
+HEADERS=$(BISONFILE).tab.h token.h tree.h nonterm.h
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=120
 

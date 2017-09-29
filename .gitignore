@@ -5,3 +5,4 @@ bison.output
 flex.c
 *.tab.*
 120
+test/*

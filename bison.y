@@ -48,6 +48,8 @@
 #include "token.h"
 #include "tree.h"
 
+TreeNode *astRoot;
+
 extern int typenametable_insert(char *s, int cat);
 extern int yylex(void);
 
@@ -453,7 +455,7 @@ boolean_literal:
  *----------------------------------------------------------------------*/
 
 translation_unit:
-     declaration_seq_opt           { $$ = newTreeNode(translation_unit, 1, $1); }
+     declaration_seq_opt           { astRoot = newTreeNode(translation_unit, 1, $1); $$ = NULL;}
    ;
 
 /*----------------------------------------------------------------------

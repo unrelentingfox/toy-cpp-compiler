@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "tree.h"
+#include "nonterm.h"
 
 // build a Node
 TreeNode *newTreeNode(int nonterm, int cnum, ...) {
@@ -43,6 +44,19 @@ TreeNode *newTreeNode(int nonterm, int cnum, ...) {
   //else return NULL
   return ptr;
 }
+
+int printTree(TreeNode *node, int depth) {
+  int i;
+
+  printf("%*s %s: %d\n", depth * 2, " ", humanReadable(node->nonterm), node->cnum);
+
+  for (i = 0; i < node->cnum; i++) {
+    if (node->children[i]) {
+      printTree(node->children[i], depth + 1);
+    }
+  }
+}
+
 
 // delete and free TreeNode and children
 void freeTreeNode(TreeNode *root) {
