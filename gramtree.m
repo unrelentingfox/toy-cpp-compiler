@@ -61,21 +61,21 @@ for i = 1:numel(rules)
                currtoken =  char(curr_right{j - numKids + k - 1});
                if k ~= numKids
                     fprintf(fileID, '%s ', currtoken);
-                    if ~isempty(regexp(currtoken, '''', 'match'))
-                        treestr = [treestr, 'NULL', ', '];
-                    elseif ~isempty(regexp(currtoken, '^[A-Z0-9_]+$', 'match'))
-                        treestr = [treestr, 'NULL', ', '];
-                    else 
+                    % if ~isempty(regexp(currtoken, '''', 'match'))
+                    %     treestr = [treestr, 'NULL', ', '];
+                    % elseif ~isempty(regexp(currtoken, '^[A-Z0-9_]+$', 'match'))
+                    %     treestr = [treestr, 'NULL', ', '];
+                    % else 
                         treestr = [treestr, ['$', num2str(k)], ', '];
-                    end
+                    % end
                else
-                   if ~isempty(regexp( currtoken, '''', 'match'))
-                        treestr = [treestr, 'NULL', '); }'];
-                   elseif ~isempty(regexp( currtoken, '^[A-Z0-9_]+$', 'match'))
-                        treestr = [treestr, 'NULL', '); }'];
-                   else 
+                   % if ~isempty(regexp( currtoken, '''', 'match'))
+                   %      treestr = [treestr, 'NULL', '); }'];
+                   % elseif ~isempty(regexp( currtoken, '^[A-Z0-9_]+$', 'match'))
+                   %      treestr = [treestr, 'NULL', '); }'];
+                   % else 
                         treestr = [treestr,  ['$', num2str(k)], '); }'];
-                   end
+                   % end
                    fprintf(fileID, '%s ',  currtoken);
                end
             end
