@@ -2,10 +2,8 @@
 #include <string.h>
 
 extern FILE *yyin;
-extern struct Token yytoken;
 extern char *filename;
 extern int lineno;
-extern int yylex();
 extern int yyparse();
 
 int main(int argc, char **argv) {
