@@ -55,8 +55,10 @@ extern int yylex(void);
 
 extern int lineno;
 extern char *yytext;
-#define YYDEBUG 1
-int yydebug=1;
+
+/* Debug Options */
+//#define YYDEBUG 1
+//int yydebug=1;
 
 static void yyerror(char *s);
 

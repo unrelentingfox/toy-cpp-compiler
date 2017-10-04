@@ -4,6 +4,7 @@
  * Abstract Syntax Tree declarations.
  */
 #include "token.h"
+#define MAX_CHILDREN 10
 
 // Boolean functionality for readability
 typedef int bool;
@@ -12,11 +13,11 @@ typedef int bool;
 
 // Abstract Syntax Tree
 typedef struct TreeNode {
-  bool leaf;                      // tell whether this is a leaf note or not.
+  bool leaf;                                  // tell whether this is a leaf note or not.
   int nonterm;
-  int cnum;                       // How many children
-  struct TreeNode *children[10];   // Array of child nodes size from 0..cnum
-  Token *token;                    // The token if its a leaf
+  int cnum;                                   // How many children
+  struct TreeNode *children[MAX_CHILDREN];    // Array of child nodes size from 0..cnum
+  Token *token;                               // The token if its a leaf
 } TreeNode;
 
 // Build a Node
