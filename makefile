@@ -1,7 +1,7 @@
 YACC=bison
 LEX=flex
 CC=cc
-OPTS=-g
+OPTS=-g -Wall
 
 BISONFILE=bison
 FLEXFILE=flex
