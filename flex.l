@@ -373,7 +373,7 @@ static int set_yylval(int category) {
 static void lexerr(char *s)
 {
   errors++;
-  fprintf(stderr, "LEXICAL ERROR: In file (%s) line number (%d) %s",yylval.treenode->token->filename, lineno, s);
+  fprintf(stderr, "LEXICAL ERROR: In file (%s) line number (%d) %s",filename, lineno, s);
   fprintf(stderr, ", token = \"%s\"\n", yytext);
   exit(1);
 }

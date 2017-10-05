@@ -44,6 +44,7 @@
 %{
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "nonterm.h"
 #include "token.h"
 #include "tree.h"
@@ -1176,7 +1177,14 @@ class_specifier:
 
 
 class_head:
-     class_key identifier           { $$ = newTreeNode(class_head, 2, $1, $2); }
+     class_key identifier           {
+      if($2->token->text){
+        typenametable_insert($2->token->text, CLASS_NAME);
+        $$ = newTreeNode(class_head, 2, $1, $2); 
+      } else {
+        yyerror("class identifier could not be added to the typenametable");
+      }
+    }
    | class_key identifier base_clause           { $$ = newTreeNode(class_head, 3, $1, $2, $3); }
    | class_key nested_name_specifier identifier           { $$ = newTreeNode(class_head, 3, $1, $2, $3); }
    | class_key nested_name_specifier identifier base_clause           { $$ = newTreeNode(class_head, 4, $1, $2, $3, $4); }
@@ -1630,5 +1638,6 @@ type_id_list_opt:
 static void
 yyerror(char *s)
 {
-  fprintf(stderr, "!! %s !!: in \"%s\" on line %d. Token: %s\n",s ,yylval.treenode->token->filename,yylval.treenode->token->lineno, yylval.treenode->token->text);
+  fprintf(stderr, "SYNTAX ERROR: In file (%s) line number (%d) %s, Token: \"%s\"\n",yylval.treenode->token->filename,yylval.treenode->token->lineno, s,  yylval.treenode->token->text);
+  exit(2);
 }
