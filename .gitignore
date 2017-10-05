@@ -1,4 +1,8 @@
 *.yy.*
 *.o
 *.test.*
-120++
+bison.output
+flex.c
+*.tab.*
+120
+test/*

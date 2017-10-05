@@ -1,31 +1,36 @@
-CC=gcc
-CFLAGS=-c -g
+YACC=bison
+LEX=flex
+CC=cc
+OPTS=-g -Wall
 
-120++: 120++.o lex.yy.o
-	$(CC) -o 120++ 120++.o lex.yy.o
+BISONFILE=bison
+FLEXFILE=flex
 
-120++.o: 120++.c
-	$(CC) $(CFLAGS) 120++.c
+SOURCES=$(BISONFILE).tab.c $(FLEXFILE).c main.c tree.c nonterm.c
+HEADERS=$(BISONFILE).tab.h token.h tree.h nonterm.h
+OBJECTS=$(SOURCES:.c=.o)
+EXECUTABLE=120
 
-lex.yy.o: lex.yy.c
-	$(CC) $(CFLAGS) lex.yy.c
+all: $(SOURCES) $(EXECUTABLE)
 
-lex.yy.c: clex.l ytab.h #cgram.tab.h
-	flex clex.l
+# Build the EXECUTABLE from the objects
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) $(OPTS) $(OBJECTS) -o $@
 
-## phase 2: ignore for now
+# Build all .o files from all .c files
+$(OBJECTS): $(SOURCES)
+	$(CC) -c -g $(SOURCES)
 
-#c: main.o cgram.tab.o lex.yy.o
-#	cc -o c main.o cgram.tab.o lex.yy.o
+# Create the bison.c and bison.h files
+$(BISONFILE).tab.c $(BISONFILE).tab.h: $(BISONFILE).y
+	$(YACC) -dt --verbose $<
 
-#cgram.tab.o: cgram.tab.c
-#	cc -c -DYYDEBUG cgram.tab.c
 
-#cgram.tab.c: cgram.y
-#	bison -d -v cgram.y
+# Create the flex.c file
+$(FLEXFILE:.l=.c): $(FELXFILE).l
+	$(LEX) -t $(FLEXFILE).l >$(FLEXFILE).c
 
-#cgram.tab.h: cgram.tab.c
-
+# Remove generated files
 clean:
-	rm *.o; rm *.yy.*; rm 120++
-	
+	rm -f $(EXECUTABLE) $(OBJECTS)
+	rm -f $(FLEXFILE).c $(BISONFILE).tab.c $(BISONFILE).tab.h
