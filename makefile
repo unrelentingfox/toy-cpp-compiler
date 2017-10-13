@@ -9,7 +9,7 @@ FLEXFILE=flex
 SOURCES=$(BISONFILE).tab.c $(FLEXFILE).c main.c tree.c nonterm.c
 HEADERS=$(BISONFILE).tab.h token.h tree.h nonterm.h
 OBJECTS=$(SOURCES:.c=.o)
-EXECUTABLE=120
+EXECUTABLE=120++
 
 all: $(SOURCES) $(EXECUTABLE)
 
@@ -33,4 +33,4 @@ $(FLEXFILE:.l=.c): $(FELXFILE).l
 # Remove generated files
 clean:
 	rm -f $(EXECUTABLE) $(OBJECTS)
-	rm -f $(FLEXFILE).c $(BISONFILE).tab.c $(BISONFILE).tab.h
+	rm -f $(FLEXFILE).c $(BISONFILE).tab.c $(BISONFILE).tab.h $(BISONFILE).output
