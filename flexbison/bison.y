@@ -45,9 +45,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "nonterm.h"
-#include "token.h"
-#include "tree.h"
+#include "../header/nonterm.h"
+#include "../header/token.h"
+#include "../header/tree.h"
 
 TreeNode *astRoot;
 

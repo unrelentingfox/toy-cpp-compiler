@@ -1,4 +1,4 @@
-#include "nonterm.h"
+#include "../header/nonterm.h"
 
 char *humanReadable(int nonterm) {
 

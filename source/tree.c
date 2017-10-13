@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include "tree.h"
-#include "nonterm.h"
+#include "../header/tree.h"
+#include "../header/nonterm.h"
 
 // build a Node
 TreeNode *newTreeNode(int nonterm, int va_num, ...) {

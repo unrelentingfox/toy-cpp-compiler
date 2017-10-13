@@ -41,9 +41,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "token.h"
-#include "bison.tab.h"
-#include "tree.h"
+#include "../header/token.h"
+#include "../header/bison.h"
+#include "../header/tree.h"
 
 /*
  * Debug info 

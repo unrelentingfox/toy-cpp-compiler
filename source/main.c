@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-#include "nonterm.h"
-#include "tree.h"
+#include "../header/nonterm.h"
+#include "../header/tree.h"
 
 extern FILE *yyin;
 extern char *filename;
