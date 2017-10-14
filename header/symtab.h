@@ -1,0 +1,38 @@
+#ifndef SYMTAB_H
+#define SYMTAB_H
+
+#define TABLE_SIZE 100
+
+#include <string.h>
+
+#include "type.h"
+
+struct SymbolTable {
+  struct SymbolTable *parent;     // the parent scope. If NULL then this is global scope.
+  int nNodes;                     // number of nodes stored in this table.
+  SymtabNode *buckets[TABLE_SIZE];  // the table itself. An array of nodes or "buckets".
+} Symtab;
+
+struct SymbolTableNode {
+  char *key;                    // the name of the symbol.
+  Type type;                    // type info for the symbol.
+  struct SymbolTableNode *next; // the next node in the bucket.
+} SymtabNode;
+
+// creates a new symbol table, whose scope is local to (or inside) parent
+Symtab *symtab_make(Symtab *parent);
+
+// insert a symbol into a table
+int symtab_insert(Symtab *table, char *key, Type *type);
+
+// lookup a symbol in a table; returns structure pointer including type and offset. lookup operations are often chained together progressively from most local scope on out to global scope.
+SymtabNode *symtab_lookup(Symtab *table, char *key);
+
+SymtabNode *symtab_search_bucket(SymtabNode *head, char *key);
+
+int symtab_hash(*char key);
+
+// sums the widths of all entries in the table.
+// TODO: widthSymTab(table);
+
+#endif

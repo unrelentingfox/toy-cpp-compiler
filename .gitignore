@@ -1,8 +1,7 @@
-*.yy.*
 *.o
-*.test.*
-bison.output
-flex.c
-*.tab.*
-120
+*bison.output
+*bison.c
+*bison.h
+*flex.c
 test/*
+*worksheet.c
