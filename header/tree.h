@@ -4,12 +4,8 @@
  * Abstract Syntax Tree declarations.
  */
 #include "token.h"
+#include <stdbool.h>
 #define MAX_CHILDREN 10
-
-// Boolean functionality for readability
-typedef int bool;
-#define true 1
-#define false 0
 
 // Abstract Syntax Tree
 typedef struct TreeNode {

@@ -1,7 +1,9 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-enum BaseType {
+#include "symtab.h"
+
+typedef enum BaseType {
   VOID_T,
   INT_T,
   SHORT_T,
@@ -10,28 +12,29 @@ enum BaseType {
   DOUBLE_T,
   LONG_DOUBLE_T,
   CHAR_T,
-  UNSIGNED_T
+  UNSIGNED_T,
   ARRAY_T,
   CLASS_T,
   FUNCTION_T
 } BaseType;
 
-struct Type {
+typedef struct Type {
   BaseType basetype;
-  union {
+  union info {
     struct ArrayInfo {
       int size; /* allow for missing size, e.g. -1 */
-      typeinfo *elemType; /* pointer to c_type for elements in array,
+      struct Type *elemType; /* pointer to c_type for elements in array,
           follow it to find its base type, etc.*/
     } array;
     struct ClassInfo {    /* structs */
       char *name;
       int nFields;
-      ClassField **fields;
+      struct SymbolTable *symtab;
     } class;
     struct FunctionInfo {
-      typeinfo *returntype;
-      list *parameters;
+      struct Type *returntype;
+      // list *parameters;
+      struct SymbolTable *symtab;
     } function;
   } info;
 } Type;

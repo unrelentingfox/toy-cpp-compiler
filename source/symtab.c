@@ -1,12 +1,15 @@
 #include "../header/symtab.h"
-
 #include "../header/logger.h"
 
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 // creates a new symbol table, whose scope is local to (or inside) parent
-symtab_make(Symtab *parent) {
+Symtab *symtab_make(Symtab *parent) {
   Symtab *symtab = (Symtab *)malloc(sizeof(Symtab));
   if (parent)
-    symtab->patent = parent;
+    symtab->parent = parent;
   else
     parent = NULL;
   symtab->nNodes = 0;
@@ -88,4 +91,14 @@ int symtab_hash(char *key) {
     hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
   return hash % TABLE_SIZE;
+}
+
+void symtab_print(Symtab *table) {
+  log_assert(table, "table");
+  for(int i = 0; i < TABLE_SIZE; i++){
+    if(table->buckets[i])
+      printf("%d : %s \n", i,table->buckets[i]->key);
+    else
+      printf("%d : (NULL) \n", i);
+  }
 }

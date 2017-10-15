@@ -1,7 +1,10 @@
 #include "../header/logger.h"
 
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-void log_assert(bool val, char* name) {
+void log_assert(bool val, char *name) {
   if (val) {
     return;
   } else {
@@ -10,12 +13,12 @@ void log_assert(bool val, char* name) {
   }
 }
 
-void log_error(errortype, const char *format, ...) {
+void log_error(ErrorTypes errortype, const char *format, ...) {
   va_list args;
   va_start(args, format);
   fprintf(stderr, format, args);
   va_end(args);
-  exit(errortype)
+  exit(errortype);
 }
 
 void log_lex_error(const char *format, ...) {
