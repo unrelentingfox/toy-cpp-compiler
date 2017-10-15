@@ -31,7 +31,8 @@ SymtabNode *symtab_search_bucket(SymtabNode *head, char *key);
 
 int symtab_hash(char *key);
 
-void symtab_print(Symtab *table);
+void symtab_print_table(Symtab *table);
+void symtab_print_bucket(SymtabNode *node);
 
 // sums the widths of all entries in the table.
 // TODO: widthSymTab(table);

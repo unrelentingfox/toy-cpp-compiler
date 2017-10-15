@@ -87,13 +87,13 @@ SymtabNode *symtab_lookup(Symtab *table, char *key) {
 SymtabNode *symtab_search_bucket(SymtabNode *node, char *key) {
   log_assert(node, "node");
   log_assert(key, "key");
-  int firstLoop = 1;
+  int firstLoop = true;
   do {
     if (!firstLoop)
       node = node->next;
     if (strcmp(node->key, key) == 0)
       return node;
-    firstLoop = 0;
+    firstLoop = false;
   } while (node->next);
 
   // couldn't find target
@@ -111,12 +111,25 @@ int symtab_hash(char *key) {
   return hash % TABLE_SIZE;
 }
 
-void symtab_print(Symtab *table) {
+void symtab_print_table(Symtab *table) {
   log_assert(table, "table");
   for (int i = 0; i < TABLE_SIZE; i++) {
-    if (table->buckets[i])
-      printf("%d : %s \n", i, table->buckets[i]->key);
-    else
+    if (table->buckets[i]) {
+      printf("%d : (BUCKET)", i);
+      symtab_print_bucket(table->buckets[i]);
+    } else
       printf("%d : (NULL) \n", i);
   }
+}
+
+void symtab_print_bucket(SymtabNode *node) {
+  int firstLoop = true;
+  do {
+    if (!firstLoop)
+      node = node->next;
+    if (node)
+      printf("->(%s)", node->key);
+    firstLoop = false;
+  } while (node->next);
+  printf("\n");
 }
