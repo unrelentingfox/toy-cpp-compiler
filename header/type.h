@@ -40,4 +40,6 @@ typedef struct Type {
   } info;
 } Type;
 
+int type_from_nonterm(int nonterm);
+
 #endif

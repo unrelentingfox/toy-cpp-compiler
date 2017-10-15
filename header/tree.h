@@ -9,8 +9,7 @@
 
 // Abstract Syntax Tree
 typedef struct TreeNode {
-  bool leaf;                                  // tell whether this is a leaf note or not.
-  int nonterm;
+  int label;
   int cnum;                                   // How many children
   struct TreeNode *children[MAX_CHILDREN];    // Array of child nodes size from 0..cnum
   Token *token;                               // The token if its a leaf

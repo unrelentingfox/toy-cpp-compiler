@@ -17,7 +17,7 @@ TreeNode *tree_new(int nonterm, int va_num, ...) {
       ptr = va_arg(ap, TreeNode *);
       if (ptr != NULL) {
         va_end(ap);
-        // ptr->nonterm = nonterm;
+        // ptr->label = nonterm;
       }
     } else {
 
@@ -27,8 +27,7 @@ TreeNode *tree_new(int nonterm, int va_num, ...) {
         fprintf(stderr, "alctree out of memory\n");
         exit(1);
       }
-      ptr->leaf = false;
-      ptr->nonterm = nonterm;
+      ptr->label = nonterm;
 
       // iterate through children and add them to the new treeNode
       int i = 0;
@@ -50,8 +49,8 @@ TreeNode *tree_new(int nonterm, int va_num, ...) {
 int tree_print(TreeNode *node, int depth) {
   int i;
 
-  if (node && node->cnum > 0) {
-    printf("%*s %s: %d\n", depth * 2, " ", humanReadable(node->nonterm), node->cnum);
+  if (node && node->label < 0) {
+    printf("%*s %s: %d\n", depth * 2, " ", humanReadable(node->label), node->cnum);
 
     for (i = 0; i < node->cnum; i++) {
       if (node->children[i]) {

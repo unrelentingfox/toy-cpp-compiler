@@ -336,10 +336,11 @@ check_identifier(char *s)
 }
 
 static int set_yylval(int category) {
+  // TODO: move this functionality out into tree.c
+
   // Create TreeNode leaf node.
   yylval.treenode = (TreeNode*)calloc(1,sizeof(TreeNode));
-  yylval.treenode->leaf = true;
-  yylval.treenode->nonterm = 0;
+  yylval.treenode->label = category;
   yylval.treenode->cnum = 0;
 
   // Create the Token to put in the leaf node.

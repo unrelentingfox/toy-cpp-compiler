@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  
+  tree_print(astRoot, 0);
   sem_init_global();
   sem_declaration(astRoot);
   symtab_print_table(sem_global);
