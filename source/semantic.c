@@ -12,7 +12,7 @@ Symtab *sem_current;
 
 int sem_init_global() {
   //TODO: create a function to free symtab before init.
-  sem_global = symtab_make(NULL);
+  sem_global = symtab_new_tree(NULL);
   sem_current = sem_global;
 }
 
@@ -39,15 +39,15 @@ void sem_declaration(TreeNode *treenode) {
   }
 }
 
-void sem_handle_init_declarator(TreeNode *treenode, char *typename) {
+void sem_handle_init_declarator(TreeNode *treenode, char *basetype) {
   log_assert(treenode, "treenode");
-  log_assert(typename, "typename");
+  log_assert(basetype, "basetype");
 
   Type *newtype = (Type *)malloc(sizeof(Type));
   if (treenode->children[0]->leaf == true) {
     printf("VARIABLE DECLARATION\n");
     newtype->basetype = INT_T;
-    symtab_insert(sem_global, typename, newtype);
+    symtab_insert(sem_global, treenode->children[0]->token->text, newtype);
   } else
     printf("FUNCTION DELCARATION\n");
 }

@@ -17,11 +17,11 @@ typedef struct TreeNode {
 } TreeNode;
 
 // Build a Node
-TreeNode *newTreeNode(int nonterm, int cnum, ...);
+TreeNode *tree_new(int nonterm, int cnum, ...);
 
 // Print the tree from node
-int printTree(TreeNode *t, int depth);
+int tree_print(TreeNode *t, int depth);
 
 // Delete and free TreeNode and children
-void freeTreeNode(TreeNode *root);
+void tree_free(TreeNode *root);
 #endif

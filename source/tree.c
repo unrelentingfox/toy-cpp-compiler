@@ -5,7 +5,7 @@
 #include "../header/nonterm.h"
 
 // build a Node
-TreeNode *newTreeNode(int nonterm, int va_num, ...) {
+TreeNode *tree_new(int nonterm, int va_num, ...) {
   TreeNode *ptr = NULL;
   va_list ap;
 
@@ -47,7 +47,7 @@ TreeNode *newTreeNode(int nonterm, int va_num, ...) {
   return ptr;
 }
 
-int printTree(TreeNode *node, int depth) {
+int tree_print(TreeNode *node, int depth) {
   int i;
 
   if (node && node->cnum > 0) {
@@ -55,7 +55,7 @@ int printTree(TreeNode *node, int depth) {
 
     for (i = 0; i < node->cnum; i++) {
       if (node->children[i]) {
-        printTree(node->children[i], depth + 1);
+        tree_print(node->children[i], depth + 1);
       }
     }
   } else if (node) {
@@ -66,6 +66,6 @@ int printTree(TreeNode *node, int depth) {
 
 
 // delete and free TreeNode and children
-void freeTreeNode(TreeNode *root) {
+void tree_free(TreeNode *root) {
 
 }

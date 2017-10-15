@@ -18,8 +18,8 @@ typedef struct SymbolTable {
 } Symtab;
 
 // creates a new symbol table, whose scope is local to (or inside) parent
-Symtab *symtab_make(Symtab *parent);
-SymtabNode *symtab_make_node(char *key, Type *type);
+Symtab *symtab_new_tree(Symtab *parent);
+SymtabNode *symtab_new_node(char *key, Type *type);
 
 // insert a symbol into a table
 int symtab_insert(Symtab *table, char *key, Type *type);

@@ -30,8 +30,9 @@ int main(int argc, char **argv) {
     }
   }
 
+  
   sem_init_global();
   sem_declaration(astRoot);
-  symtab_print(sem_global);
+  symtab_print_table(sem_global);
   return 0;
 }

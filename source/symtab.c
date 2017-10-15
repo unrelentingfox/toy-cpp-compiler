@@ -7,7 +7,7 @@
 #include <stdbool.h>
 
 // creates a new symbol table, whose scope is local to (or inside) parent
-Symtab *symtab_make(Symtab *parent) {
+Symtab *symtab_new_tree(Symtab *parent) {
   Symtab *new_symtab = NULL;
   // allocate the hashtable
   if ((new_symtab = (Symtab *)malloc(sizeof(Symtab))) == NULL) {
@@ -30,7 +30,7 @@ Symtab *symtab_make(Symtab *parent) {
   return new_symtab;
 }
 
-SymtabNode *symtab_make_node(char *key, Type *type) {
+SymtabNode *symtab_new_node(char *key, Type *type) {
   log_assert(key, "key");
   log_assert(type, "type");
   SymtabNode *node = (SymtabNode *)malloc(sizeof(SymtabNode));
@@ -46,7 +46,7 @@ int symtab_insert(Symtab *table, char *key, Type *type) {
   log_assert(key, "key");
 
   // create the node
-  SymtabNode *node = symtab_make_node(key, type);
+  SymtabNode *node = symtab_new_node(key, type);
 
   // insert the node
   int hash = symtab_hash(key) % TABLE_SIZE;
