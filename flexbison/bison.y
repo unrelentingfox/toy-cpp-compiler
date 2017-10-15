@@ -45,6 +45,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "../header/logger.h"
 #include "../header/nonterm.h"
 #include "../header/token.h"
 #include "../header/tree.h"
@@ -61,7 +62,11 @@ extern char *yytext;
 //#define YYDEBUG 1
 //int yydebug=1;
 
-static void yyerror(char *s);
+static void
+yyerror(char *message);
+
+static void
+sup_error(char *message);
 
 %}
 %union {
@@ -1044,15 +1049,15 @@ declarator:
 
 direct_declarator:
      declarator_id           { $$ = newTreeNode(direct_declarator, 1, $1); }
-   | direct_declarator '(' parameter_declaration_clause ')' cv_qualifier_seq exception_specification           { $$ = newTreeNode(direct_declarator, 6, $1, $2, $3, $4, $5, $6); }
-   | direct_declarator '(' parameter_declaration_clause ')' cv_qualifier_seq           { $$ = newTreeNode(direct_declarator, 5, $1, $2, $3, $4, $5); }
-   | direct_declarator '(' parameter_declaration_clause ')' exception_specification //           { $$ = newTreeNode(direct_declarator, 6, $1, $2, $3, $4, $5, $6); }
-   | direct_declarator '(' parameter_declaration_clause ')'           { $$ = newTreeNode(direct_declarator, 4, $1, $2, $3, $4); }
-   | CLASS_NAME '(' parameter_declaration_clause ')'           { $$ = newTreeNode(direct_declarator, 4, $1, $2, $3, $4); }
-   | CLASS_NAME COLONCOLON declarator_id '(' parameter_declaration_clause ')'           { $$ = newTreeNode(direct_declarator, 6, $1, $2, $3, $4, $5, $6); }
-   | CLASS_NAME COLONCOLON CLASS_NAME '(' parameter_declaration_clause ')'           { $$ = newTreeNode(direct_declarator, 6, $1, $2, $3, $4, $5, $6); }
-   | direct_declarator '[' constant_expression_opt ']'           { $$ = newTreeNode(direct_declarator, 4, $1, $2, $3, $4); }
-   | '(' declarator ')'           { $$ = newTreeNode(direct_declarator, 3, $1, $2, $3); }
+   | direct_declarator '(' parameter_declaration_clause ')' cv_qualifier_seq exception_specification           { $$ = newTreeNode(direct_declarator-1, 6, $1, $2, $3, $4, $5, $6); }
+   | direct_declarator '(' parameter_declaration_clause ')' cv_qualifier_seq           { $$ = newTreeNode(direct_declarator-2, 5, $1, $2, $3, $4, $5); }
+   | direct_declarator '(' parameter_declaration_clause ')' exception_specification            { $$ = newTreeNode(direct_declarator-3, 5, $1, $2, $3, $4, $5); }
+   | direct_declarator '(' parameter_declaration_clause ')'           { $$ = newTreeNode(direct_declarator-4, 4, $1, $2, $3, $4); }
+   | CLASS_NAME '(' parameter_declaration_clause ')'           { $$ = newTreeNode(direct_declarator-5, 4, $1, $2, $3, $4); }
+   | CLASS_NAME COLONCOLON declarator_id '(' parameter_declaration_clause ')'           { $$ = newTreeNode(direct_declarator-6, 6, $1, $2, $3, $4, $5, $6); }
+   | CLASS_NAME COLONCOLON CLASS_NAME '(' parameter_declaration_clause ')'           { $$ = newTreeNode(direct_declarator-7, 6, $1, $2, $3, $4, $5, $6); }
+   | direct_declarator '[' constant_expression_opt ']'           { $$ = newTreeNode(direct_declarator-8, 4, $1, $2, $3, $4); }
+   | '(' declarator ')'           { $$ = newTreeNode(direct_declarator-9, 3, $1, $2, $3); }
    ;
 
 
@@ -1138,9 +1143,9 @@ parameter_declaration:
 
 function_definition:
      declarator ctor_initializer_opt function_body           { $$ = newTreeNode(function_definition, 3, $1, $2, $3); }
-   | decl_specifier_seq declarator ctor_initializer_opt function_body           { $$ = newTreeNode(function_definition, 4, $1, $2, $3, $4); }
-   | declarator function_try_block           { $$ = newTreeNode(function_definition, 2, $1, $2); }
-   | decl_specifier_seq declarator function_try_block           { $$ = newTreeNode(function_definition, 3, $1, $2, $3); }
+   | decl_specifier_seq declarator ctor_initializer_opt function_body           { $$ = newTreeNode(function_definition-1, 4, $1, $2, $3, $4); }
+   | declarator function_try_block           { $$ = newTreeNode(function_definition-2, 2, $1, $2); }
+   | decl_specifier_seq declarator function_try_block           { $$ = newTreeNode(function_definition-3, 3, $1, $2, $3); }
    ;
 
 
@@ -1443,7 +1448,7 @@ try_block:
 
 
 function_try_block:
-     TRY ctor_initializer_opt function_body handler_seq           { $$ = newTreeNode(function_try_block, 4, $1, $2, $3, $4); }
+     TRY ctor_initializer_opt function_body handler_seq           { sup_error("try_block not supported in 120++"); }
    ;
 
 
@@ -1636,8 +1641,13 @@ type_id_list_opt:
 %%
 
 static void
-yyerror(char *s)
+yyerror(char *message)
 {
-  fprintf(stderr, "SYNTAX ERROR: In file (%s) line number (%d) %s, Token: \"%s\"\n",yylval.treenode->token->filename,yylval.treenode->token->lineno, s,  yylval.treenode->token->text);
-  exit(2);
+  log_syn_error(yylval.treenode->token->filename,yylval.treenode->token->lineno, message,  yylval.treenode->token->text);
+}
+
+static void
+sup_error(char *message)
+{
+  log_sup_error(yylval.treenode->token->filename,yylval.treenode->token->lineno, message,  yylval.treenode->token->text);
 }

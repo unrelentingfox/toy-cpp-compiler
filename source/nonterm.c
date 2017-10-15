@@ -277,6 +277,15 @@ char *humanReadable(int nonterm) {
     return strdup("declarator");
     break;
   case direct_declarator:
+  case direct_declarator-1:
+  case direct_declarator-2:
+  case direct_declarator-3:
+  case direct_declarator-4:
+  case direct_declarator-5:
+  case direct_declarator-6:
+  case direct_declarator-7:
+  case direct_declarator-8:
+  case direct_declarator-9:
     return strdup("direct_declarator");
     break;
   case ptr_operator:
@@ -313,6 +322,8 @@ char *humanReadable(int nonterm) {
     return strdup("parameter_declaration");
     break;
   case function_definition:
+  case function_definition-1:
+  case function_definition-2:
     return strdup("function_definition");
     break;
   case function_body:

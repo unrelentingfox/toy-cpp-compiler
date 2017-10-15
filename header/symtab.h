@@ -14,11 +14,12 @@ typedef struct SymbolTableNode {
 typedef struct SymbolTable {
   struct SymbolTable *parent;     // the parent scope. If NULL then this is global scope.
   int nNodes;                     // number of nodes stored in this table.
-  struct SymbolTableNode *buckets[TABLE_SIZE];  // the table itself. An array of nodes or "buckets".
+  struct SymbolTableNode **buckets;  // the table itself. An array of nodes or "buckets".
 } Symtab;
 
 // creates a new symbol table, whose scope is local to (or inside) parent
 Symtab *symtab_make(Symtab *parent);
+SymtabNode *symtab_make_node(char *key, Type *type);
 
 // insert a symbol into a table
 int symtab_insert(Symtab *table, char *key, Type *type);

@@ -26,9 +26,12 @@ void log_lex_error(const char *format, ...) {
   log_error(LEX_ERROR, format, args);
 }
 
-void log_syn_error(const char *format, ...) {
-  va_list args;
-  log_error(SYN_ERROR, format, args);
+void log_syn_error(char* filename, int lineno, char* message, char* token) {
+  log_error(SYN_ERROR, "SYNTAX ERROR: In file (%s) line number (%d) %s, Token: \"%s\"\n",filename, lineno, message, token);
+}
+
+void log_sup_error(char* filename, int lineno, char* message, char* token){
+  log_error(SUP_ERROR, "NOT SUPPORTED ERROR: In file (%s) line number (%d) %s, Token: \"%s\"\n",filename, lineno, message, token);
 }
 
 void log_sem_error(const char *format, ...) {

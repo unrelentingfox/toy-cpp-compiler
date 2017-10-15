@@ -4,29 +4,49 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 // creates a new symbol table, whose scope is local to (or inside) parent
 Symtab *symtab_make(Symtab *parent) {
-  Symtab *symtab = (Symtab *)malloc(sizeof(Symtab));
+  Symtab *new_symtab = NULL;
+  // allocate the hashtable
+  if ((new_symtab = (Symtab *)malloc(sizeof(Symtab))) == NULL) {
+    log_error(NULL_ERROR, "ERROR: could not allocate new hashtable.");
+  }
+  // set parent scope
   if (parent)
-    symtab->parent = parent;
+    new_symtab->parent = parent;
   else
     parent = NULL;
-  symtab->nNodes = 0;
-  return symtab;
+  //allocate bucket pointers
+  if ((new_symtab->buckets = (SymtabNode **)malloc(sizeof(SymtabNode *) * TABLE_SIZE)) == NULL) {
+    log_error(NULL_ERROR, "ERROR: could not allocate new hashtable.");
+  }
+  for (int i = 0; i < TABLE_SIZE; i++) {
+    new_symtab->buckets[i] = NULL;
+  }
+  new_symtab->nNodes = 0;
+
+  return new_symtab;
+}
+
+SymtabNode *symtab_make_node(char *key, Type *type) {
+  log_assert(key, "key");
+  log_assert(type, "type");
+  SymtabNode *node = (SymtabNode *)malloc(sizeof(SymtabNode));
+  node->key = strdup(key);
+  node->type = type;
+  node->next = NULL;
+  return node;
 }
 
 // insert a symbol into a table
 int symtab_insert(Symtab *table, char *key, Type *type) {
   log_assert(table, "table");
   log_assert(key, "key");
-  log_assert(type, "type");
 
   // create the node
-  SymtabNode *node = (SymtabNode *)malloc(sizeof(SymtabNode));
-  node->key = key;
-  node->type = type;
-  log_assert(node, "node");
+  SymtabNode *node = symtab_make_node(key, type);
 
   // insert the node
   int hash = symtab_hash(key) % TABLE_SIZE;
@@ -50,25 +70,23 @@ SymtabNode *symtab_lookup(Symtab *table, char *key) {
   SymtabNode *target = NULL;
 
   // search bucket for target
-  int firstLoop = 1;
+  int firstLoop = true;
   do {
     if (!firstLoop)
       table = table->parent;
     target = table->buckets[hash];
     if (target) {
-      target = symtab_search_bucket(table->buckets[hash], key);
+      target = symtab_search_bucket(target, key);
     }
-    firstLoop = 0;
+    firstLoop = false;
   } while (target == NULL && table->parent);
 
-  // couldn't find target
-  return NULL;
+  return target;
 }
 
 SymtabNode *symtab_search_bucket(SymtabNode *node, char *key) {
   log_assert(node, "node");
   log_assert(key, "key");
-
   int firstLoop = 1;
   do {
     if (!firstLoop)
@@ -85,7 +103,7 @@ SymtabNode *symtab_search_bucket(SymtabNode *node, char *key) {
 // djb2 algorithm created by Dan Bernstein http://www.cse.yorku.ca/~oz/hash.html
 int symtab_hash(char *key) {
   unsigned long hash = 5381;
-  int c;
+  int c = 0;
 
   while (c = *key++)
     hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
@@ -95,9 +113,9 @@ int symtab_hash(char *key) {
 
 void symtab_print(Symtab *table) {
   log_assert(table, "table");
-  for(int i = 0; i < TABLE_SIZE; i++){
-    if(table->buckets[i])
-      printf("%d : %s \n", i,table->buckets[i]->key);
+  for (int i = 0; i < TABLE_SIZE; i++) {
+    if (table->buckets[i])
+      printf("%d : %s \n", i, table->buckets[i]->key);
     else
       printf("%d : (NULL) \n", i);
   }

@@ -11,8 +11,8 @@ BIN_DIR=bin
 TEMP_DIR=temp
 BISON_FILE=bison
 FLEX_FILE=flex
-SOURCES=main.c tree.c nonterm.c
-HEADERS=token.h tree.h nonterm.h
+SOURCES=main.c tree.c nonterm.c logger.c semantic.c symtab.c
+HEADERS=token.h tree.h nonterm.h logger.h semantic.h symtab.h
 
 ###### DO NOT MODIFY BELOW ######
 GEN_SOURCES=$(BISON_FILE).c $(FLEX_FILE).c

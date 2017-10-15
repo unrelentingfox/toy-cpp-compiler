@@ -23,13 +23,14 @@ typedef struct Type {
   union info {
     struct ArrayInfo {
       int size; /* allow for missing size, e.g. -1 */
-      struct Type *elemType; /* pointer to c_type for elements in array,
+      struct Type *type; /* pointer to c_type for elements in array,
           follow it to find its base type, etc.*/
     } array;
     struct ClassInfo {    /* structs */
       char *name;
       int nFields;
-      struct SymbolTable *symtab;
+      struct SymbolTable *public;
+      struct SymbolTable *private;
     } class;
     struct FunctionInfo {
       struct Type *returntype;

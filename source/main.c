@@ -2,12 +2,15 @@
 #include <string.h>
 #include "../header/nonterm.h"
 #include "../header/tree.h"
+#include "../header/semantic.h"
+#include "../header/logger.h"
 
 extern FILE *yyin;
 extern char *filename;
 extern int lineno;
 extern int yyparse();
 extern TreeNode *astRoot;
+extern Symtab* sem_global;
 
 int main(int argc, char **argv) {
   if (argc > 1) {
@@ -27,6 +30,8 @@ int main(int argc, char **argv) {
     }
   }
 
-  printTree(astRoot, 0);
+  sem_init_global();
+  sem_declaration(astRoot);
+  symtab_print(sem_global);
   return 0;
 }
