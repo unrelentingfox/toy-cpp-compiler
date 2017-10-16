@@ -44,6 +44,7 @@
 #include "../header/token.h"
 #include "../header/bison.h"
 #include "../header/tree.h"
+#include "../header/logger.h"
 
 /*
  * Debug info 
@@ -67,6 +68,7 @@ int typenametable_insert(char *s, int cat);
 int typenametable_lookup(char *s);
 
 static void lexerr(char *s);
+static void sup_error(char *message);
 static void handle_include();
 static int set_yylval(int category);
 static void record_comment();
@@ -206,7 +208,7 @@ stringtext  ([^"])|(\\.)
 "throw"                               { return set_yylval(THROW); }
 "true"                                { return set_yylval(TRUE); }
 "try"                                 { return set_yylval(TRY); }
-"typedef"                             { return set_yylval(TYPEDEF); }
+"typedef"                             { sup_error(yytext); }
 "typeid"                              { return set_yylval(TYPEID); }
 "typename"                            { return set_yylval(TYPENAME); }
 "union"                               { return set_yylval(UNION); }
@@ -215,7 +217,7 @@ stringtext  ([^"])|(\\.)
 "virtual"                             { return set_yylval(VIRTUAL); }
 "void"                                { return set_yylval(VOID); }
 "volatile"                            { return set_yylval(VOLATILE); }
-"wchar_t"                             { return set_yylval(WCHAR_T); }
+"wchar_t"                             { sup_error(yytext); }
 "while"                               { return set_yylval(WHILE); }
 [a-zA-Z_][a-zA-Z_0-9]*                { return set_yylval(check_identifier(yytext)); }
 "0"[xX][0-9a-fA-F]+{intsuffix}?       { return set_yylval(INTEGER); }
@@ -371,12 +373,13 @@ static int set_yylval(int category) {
 /*
  * Handle lexical errors.
  */
-static void lexerr(char *s)
+static void lexerr(char *message)
 {
-  errors++;
-  fprintf(stderr, "LEXICAL ERROR: In file (%s) line number (%d) %s",filename, lineno, s);
-  fprintf(stderr, ", token = \"%s\"\n", yytext);
-  exit(1);
+  log_lex_error(yylval.treenode->token->filename,yylval.treenode->token->lineno, message,  yylval.treenode->token->text);
+}
+
+static void sup_error(char *message){
+  log_sup_error(yylval.treenode->token->filename,yylval.treenode->token->lineno, message,  yylval.treenode->token->text);
 }
 
 /*

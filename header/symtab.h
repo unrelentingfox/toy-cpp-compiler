@@ -19,10 +19,10 @@ typedef struct SymbolTable {
 
 // creates a new symbol table, whose scope is local to (or inside) parent
 Symtab *symtab_new_tree(Symtab *parent);
-SymtabNode *symtab_new_node(char *key, Type *type);
+SymtabNode *symtab_new_node(char *key, struct Type *type);
 
 // insert a symbol into a table
-int symtab_insert(Symtab *table, char *key, Type *type);
+int symtab_insert(Symtab *table, char *key, struct Type *type);
 
 // lookup a symbol in a table; returns structure pointer including type and offset. lookup operations are often chained together progressively from most local scope on out to global scope.
 SymtabNode *symtab_lookup(Symtab *table, char *key);

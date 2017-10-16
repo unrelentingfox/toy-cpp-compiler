@@ -41,9 +41,12 @@ SymtabNode *symtab_new_node(char *key, Type *type) {
 }
 
 // insert a symbol into a table
+// returns 1 if the symbol already exists
 int symtab_insert(Symtab *table, char *key, Type *type) {
   log_assert(table, "table");
   log_assert(key, "key");
+  // if (symtab_lookup(table, key))
+  //   return 1;
 
   // create the node
   SymtabNode *node = symtab_new_node(key, type);
@@ -58,6 +61,7 @@ int symtab_insert(Symtab *table, char *key, Type *type) {
       tmp = tmp->next;
     tmp->next = node;
   }
+  return 0;
 }
 
 // lookup a symbol in a table;

@@ -10,6 +10,6 @@ void sem_declaration(TreeNode *root);
 void sem_declaration_function(TreeNode *node);
 void sem_declaration_class(TreeNode *node);
 
-void sem_handle_init_declarator(TreeNode *treenode, char* typename);
+void sem_populate_init_declarator(TreeNode *treenode, Type *type);
 
 #endif

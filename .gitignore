@@ -6,3 +6,6 @@
 test/*
 *worksheet.c
 bin/*
+test/*
+example.c
+output.txt

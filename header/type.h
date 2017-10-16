@@ -2,6 +2,7 @@
 #define TYPES_H
 
 #include "symtab.h"
+#include "bison.h"
 
 typedef enum BaseType {
   VOID_T,
@@ -15,31 +16,42 @@ typedef enum BaseType {
   UNSIGNED_T,
   ARRAY_T,
   CLASS_T,
-  FUNCTION_T
+  CLASS_INSTANCE_T,
+  FUNCTION_T,
+  UNKNOWN_T
 } BaseType;
+
+typedef struct ArrayInfo {
+  int size; /* allow for missing size, e.g. -1 */
+  struct Type *type; /* pointer to c_type for elements in array,
+          follow it to find its base type, etc.*/
+} ArrayInfo;
+
+typedef struct ClassInfo {    /* structs */
+  char *name;
+  int nFields;
+  struct SymbolTable *public;
+  struct SymbolTable *private;
+} ClassInfo;
+
+typedef struct FunctionInfo {
+  struct Type *returntype;
+  // list *parameters;
+  struct SymbolTable *symtab;
+} FunctionInfo;
 
 typedef struct Type {
   BaseType basetype;
   union info {
-    struct ArrayInfo {
-      int size; /* allow for missing size, e.g. -1 */
-      struct Type *type; /* pointer to c_type for elements in array,
-          follow it to find its base type, etc.*/
-    } array;
-    struct ClassInfo {    /* structs */
-      char *name;
-      int nFields;
-      struct SymbolTable *public;
-      struct SymbolTable *private;
-    } class;
-    struct FunctionInfo {
-      struct Type *returntype;
-      // list *parameters;
-      struct SymbolTable *symtab;
-    } function;
+    ArrayInfo array;
+    ClassInfo class;
+    FunctionInfo function;
+    struct Type *parentclass;
   } info;
 } Type;
 
-int type_from_nonterm(int nonterm);
+int type_from_terminal(int terminal);
+
+Type *type_new(enum BaseType basetype);
 
 #endif

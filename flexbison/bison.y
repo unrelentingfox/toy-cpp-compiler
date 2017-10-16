@@ -1049,15 +1049,16 @@ declarator:
 
 direct_declarator:
      declarator_id           { $$ = tree_new(direct_declarator, 1, $1); }
-   | direct_declarator '(' parameter_declaration_clause ')' cv_qualifier_seq exception_specification           { $$ = tree_new(direct_declarator-1, 6, $1, $2, $3, $4, $5, $6); }
-   | direct_declarator '(' parameter_declaration_clause ')' cv_qualifier_seq           { $$ = tree_new(direct_declarator-2, 5, $1, $2, $3, $4, $5); }
-   | direct_declarator '(' parameter_declaration_clause ')' exception_specification            { $$ = tree_new(direct_declarator-3, 5, $1, $2, $3, $4, $5); }
-   | direct_declarator '(' parameter_declaration_clause ')'           { $$ = tree_new(direct_declarator-4, 4, $1, $2, $3, $4); }
-   | CLASS_NAME '(' parameter_declaration_clause ')'           { $$ = tree_new(direct_declarator-5, 4, $1, $2, $3, $4); }
-   | CLASS_NAME COLONCOLON declarator_id '(' parameter_declaration_clause ')'           { $$ = tree_new(direct_declarator-6, 6, $1, $2, $3, $4, $5, $6); }
-   | CLASS_NAME COLONCOLON CLASS_NAME '(' parameter_declaration_clause ')'           { $$ = tree_new(direct_declarator-7, 6, $1, $2, $3, $4, $5, $6); }
-   | direct_declarator '[' constant_expression_opt ']'           { $$ = tree_new(direct_declarator-8, 4, $1, $2, $3, $4); }
-   | '(' declarator ')'           { $$ = tree_new(direct_declarator-9, 3, $1, $2, $3); }
+   | direct_declarator '(' parameter_declaration_clause ')' cv_qualifier_seq exception_specification           { $$ = NULL; sup_error("cv_qualifier");}
+   | direct_declarator '(' parameter_declaration_clause ')' cv_qualifier_seq           { $$ = NULL; sup_error("cv_qualifier");}
+   | direct_declarator '(' parameter_declaration_clause ')' exception_specification            { $$ = NULL; sup_error("exception_specification");}
+   | direct_declarator '(' parameter_declaration_clause ')'           { $$ = tree_new(direct_declarator-1, 4, $1, $2, $3, $4); }
+   | CLASS_NAME '(' parameter_declaration_clause ')'           { $$ = tree_new(direct_declarator-2, 4, $1, $2, $3, $4); }
+   | CLASS_NAME COLONCOLON declarator_id '(' parameter_declaration_clause ')'           { $$ = tree_new(direct_declarator-3, 6, $1, $2, $3, $4, $5, $6); }
+   | CLASS_NAME COLONCOLON CLASS_NAME '(' parameter_declaration_clause ')'           { $$ = tree_new(direct_declarator-4, 6, $1, $2, $3, $4, $5, $6); }
+   | direct_declarator '[' constant_expression ']'           { $$ = tree_new(direct_declarator-5, 4, $1, $2, $3, $4); }
+   | direct_declarator '[' ']'           { $$ = tree_new(direct_declarator-6, 3, $1, $2, $3); }        
+   | '(' declarator ')'           { $$ = tree_new(direct_declarator-7, 3, $1, $2, $3); }
    ;
 
 
@@ -1109,12 +1110,12 @@ abstract_declarator:
 
 
 direct_abstract_declarator:
-     direct_abstract_declarator_opt '(' parameter_declaration_clause ')' cv_qualifier_seq exception_specification           { $$ = tree_new(direct_abstract_declarator, 6, $1, $2, $3, $4, $5, $6); }
-   | direct_abstract_declarator_opt '(' parameter_declaration_clause ')' cv_qualifier_seq           { $$ = tree_new(direct_abstract_declarator, 5, $1, $2, $3, $4, $5); }
-   | direct_abstract_declarator_opt '(' parameter_declaration_clause ')' exception_specification           { $$ = tree_new(direct_abstract_declarator, 5, $1, $2, $3, $4, $5); }
-   | direct_abstract_declarator_opt '(' parameter_declaration_clause ')'           { $$ = tree_new(direct_abstract_declarator, 4, $1, $2, $3, $4); }
-   | direct_abstract_declarator_opt '[' constant_expression_opt ']'           { $$ = tree_new(direct_abstract_declarator, 4, $1, $2, $3, $4); }
-   | '(' abstract_declarator ')'           { $$ = tree_new(direct_abstract_declarator, 3, $1, $2, $3); }
+     direct_abstract_declarator_opt '(' parameter_declaration_clause ')' cv_qualifier_seq exception_specification           { $$ = NULL; sup_error("abstract declarators");}
+   | direct_abstract_declarator_opt '(' parameter_declaration_clause ')' cv_qualifier_seq           { $$ = NULL; sup_error("abstract declarators");}
+   | direct_abstract_declarator_opt '(' parameter_declaration_clause ')' exception_specification           { $$ = NULL; sup_error("abstract declarators");}
+   | direct_abstract_declarator_opt '(' parameter_declaration_clause ')'           { $$ = NULL; sup_error("abstract declarators");}
+   | direct_abstract_declarator_opt '[' constant_expression_opt ']'           { $$ = NULL; sup_error("abstract declarators");}
+   | '(' abstract_declarator ')'           { $$ = NULL; sup_error("abstract declarators"); }
    ;
 
 
@@ -1448,7 +1449,7 @@ try_block:
 
 
 function_try_block:
-     TRY ctor_initializer_opt function_body handler_seq           { sup_error("try_block not supported in 120++"); }
+     TRY ctor_initializer_opt function_body handler_seq           { sup_error("try_block"); }
    ;
 
 
