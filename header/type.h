@@ -36,7 +36,7 @@ typedef struct ClassInfo {    /* structs */
 
 typedef struct FunctionInfo {
   struct Type *returntype;
-  // list *parameters;
+  struct Parameter *parameters;
   struct SymbolTable *symtab;
 } FunctionInfo;
 
@@ -50,8 +50,15 @@ typedef struct Type {
   } info;
 } Type;
 
+/* TODO: turn parameter list into a hash table */
+typedef struct Parameter {
+  Type *type;
+  struct Parameter *next;
+} Parameter;
+
 int type_from_terminal(int terminal);
 
 Type *type_new(enum BaseType basetype);
+Parameter *type_new_parameter(Type *type);
 
 #endif

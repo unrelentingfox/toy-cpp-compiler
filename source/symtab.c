@@ -131,8 +131,17 @@ void symtab_print_bucket(SymtabNode *node) {
   do {
     if (!firstLoop)
       node = node->next;
-    if (node)
-      printf("->(%s)", node->key);
+    if (node) {
+      printf("->%s(%d)", node->key, node->type->basetype);
+      if (node->type->basetype == FUNCTION_T && node->type->info.function.parameters) {
+        Parameter *temp = node->type->info.function.parameters;
+        while (temp->next) {
+          printf("-(%d)-", temp->type->basetype);
+          temp = temp->next;
+        }
+        printf("-(%d)-", temp->type->basetype);
+      }
+    }
     firstLoop = false;
   } while (node->next);
   printf("\n");

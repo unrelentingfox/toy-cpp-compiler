@@ -16,7 +16,7 @@ int sem_init_global() {
   sem_current = sem_global;
 }
 
-void sem_declaration(TreeNode *treenode) {
+void sem_populate(TreeNode *treenode) {
   int i;
   if (treenode == NULL) {
     printf("tree empty!\n");
@@ -30,13 +30,13 @@ void sem_declaration(TreeNode *treenode) {
     break;
   case simple_declaration:
     sem_populate_init_declarator(treenode->children[1],
-                                 type_new(treenode->children[0]->label));
+                                 type_new(type_from_terminal(treenode->children[0]->label)));
     break;
   }
 
   if (treenode->label < 0) {
     for (i = 0; i < treenode->cnum; i++)
-      sem_declaration(treenode->children[i]);
+      sem_populate(treenode->children[i]);
   }
 }
 
@@ -60,12 +60,15 @@ void sem_populate_init_declarator(TreeNode *treenode, Type *type) {
   case declarator: /* it is a pointer and a direct_declarator */
     sem_populate_init_declarator(treenode->children[1], type);
     break;
-  case direct_declarator-1: /* direct_declarator '(' parameter_declaration_clause ')' */
-  case direct_declarator-2: /* CLASS_NAME '(' parameter_declaration_clause ')' */
-  case direct_declarator-3: /* CLASS_NAME COLONCOLON declarator_id '(' parameter_declaration_clause ')' */
-  case direct_declarator-4: { /* CLASS_NAME COLONCOLON CLASS_NAME '(' parameter_declaration_clause ')' */
+  case direct_declarator-1: {/* direct_declarator '(' parameter_declaration_clause ')' */
+    //case direct_declarator-2: /* CLASS_NAME '(' parameter_declaration_clause ')' */
+    //case direct_declarator-3: /* CLASS_NAME COLONCOLON declarator_id '(' parameter_declaration_clause ')' */
+    //case direct_declarator-4: /* CLASS_NAME COLONCOLON CLASS_NAME '(' parameter_declaration_clause ')' */
     Type *temp = type_new(FUNCTION_T);
     temp->info.function.returntype = type;
+    if (treenode->children[2]->label == parameter_declaration ||
+        treenode->children[2]->label == parameter_declaration_list)
+      sem_populate_parameter_declaration(treenode->children[2], temp);
     type = temp;
     symtab_insert(sem_current, treenode->children[0]->token->text, type);
   }
@@ -78,9 +81,24 @@ void sem_populate_init_declarator(TreeNode *treenode, Type *type) {
     symtab_insert(sem_current, treenode->children[0]->token->text, type);
   }
   break;
-  // case direct_declarator-6: /* direct_declarator '[' ']' */
-  //TODO: EMPTY ARRAY DECLARATOR IS JUST A POINTER
-  // case direct_declarator-7: /* '(' declarator ')' */
+  }
+}
+
+void sem_populate_parameter_declaration(TreeNode *treenode, Type *type) {
+  switch (treenode->label) {
+  case parameter_declaration_list:
+    sem_populate_parameter_declaration(treenode->children[0], type);
+    sem_populate_parameter_declaration(treenode->children[2], type);
+    break;
+  case parameter_declaration: { /* TODO: traversing this list every time is very inefficient..hashtable? */
+    if (type->info.function.parameters != NULL) {
+      Parameter *temp = type->info.function.parameters;
+      while (temp->next) temp = temp->next;
+      temp->next = type_new_parameter(type_new(type_from_terminal(treenode->children[0]->label)));
+    } else {
+      type->info.function.parameters = type_new_parameter(type_new(type_from_terminal(treenode->children[0]->label)));
+    }
+  }
   }
 }
 

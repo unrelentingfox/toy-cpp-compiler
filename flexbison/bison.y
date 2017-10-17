@@ -1057,7 +1057,7 @@ direct_declarator:
    | CLASS_NAME COLONCOLON declarator_id '(' parameter_declaration_clause ')'           { $$ = tree_new(direct_declarator-3, 6, $1, $2, $3, $4, $5, $6); }
    | CLASS_NAME COLONCOLON CLASS_NAME '(' parameter_declaration_clause ')'           { $$ = tree_new(direct_declarator-4, 6, $1, $2, $3, $4, $5, $6); }
    | direct_declarator '[' constant_expression ']'           { $$ = tree_new(direct_declarator-5, 4, $1, $2, $3, $4); }
-   | direct_declarator '[' ']'           { $$ = tree_new(direct_declarator-6, 3, $1, $2, $3); }        
+   | direct_declarator '[' ']'           { $$ = NULL; yyerror("size of array is unknown"); }        
    | '(' declarator ')'           { $$ = tree_new(direct_declarator-7, 3, $1, $2, $3); }
    ;
 

@@ -1,5 +1,7 @@
 #include "../header/type.h"
 
+#include <stdlib.h>
+
 int type_from_terminal(int terminal) {
   switch (terminal) {
   case CHAR:
@@ -39,4 +41,11 @@ Type *type_new(enum BaseType basetype) {
   Type *newtype = (Type *)malloc(sizeof(Type));
   newtype->basetype = basetype;
   return newtype;
+}
+
+Parameter *type_new_parameter(Type *type) {
+  Parameter *newparam = (Parameter *)malloc(sizeof(Parameter));
+  newparam->type = type;
+  newparam->next = NULL;
+  return newparam;
 }
