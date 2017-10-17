@@ -354,11 +354,11 @@ static int set_yylval(int category) {
   else
     yylval.treenode->token->text = strdup("");
   yylval.treenode->token->lineno = lineno;
-  if(category == INT)
+  if(category == INTEGER)
     yylval.treenode->token->ival = atoi(yytext);
   else
     yylval.treenode->token->ival = -1;
-  if(category == DOUBLE)
+  if(category == FLOATING)
     yylval.treenode->token->dval = atof(yytext);
   else
     yylval.treenode->token->dval = -1;

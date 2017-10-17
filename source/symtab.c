@@ -133,13 +133,19 @@ void symtab_print_bucket(SymtabNode *node) {
       node = node->next;
     if (node) {
       printf("->%s(%d)", node->key, node->type->basetype);
-      if (node->type->basetype == FUNCTION_T && node->type->info.function.parameters) {
-        Parameter *temp = node->type->info.function.parameters;
-        while (temp->next) {
-          printf("-(%d)-", temp->type->basetype);
-          temp = temp->next;
+      switch (node->type->basetype) {
+      case FUNCTION_T:
+        if (node->type->info.function.parameters) {
+          Parameter *temp = node->type->info.function.parameters;
+          while (temp->next) {
+            printf("-(p:%d)", temp->type->basetype);
+            temp = temp->next;
+          }
+          printf("-(p:%d)", temp->type->basetype);
         }
-        printf("-(%d)-", temp->type->basetype);
+        break;
+      case ARRAY_T:
+        printf("-[%d]", node->type->info.array.size);
       }
     }
     firstLoop = false;
