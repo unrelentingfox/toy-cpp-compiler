@@ -41,12 +41,13 @@ SymtabNode *symtab_new_node(char *key, Type *type) {
 }
 
 // insert a symbol into a table
-// returns 1 if the symbol already exists
-int symtab_insert(Symtab *table, char *key, Type *type) {
+// return values correlate with symtabErrors enum
+int symtab_insert(Symtab *table, char* key, Type *type) {
   log_assert(table, "table");
   log_assert(key, "key");
-  // if (symtab_lookup(table, key))
-  //   return 1;
+  if (symtab_lookup(table, key)){
+    return SYM_REDECLARED;
+  }
 
   // create the node
   SymtabNode *node = symtab_new_node(key, type);
@@ -61,10 +62,16 @@ int symtab_insert(Symtab *table, char *key, Type *type) {
       tmp = tmp->next;
     tmp->next = node;
   }
-  return 0;
+  if (table->buckets[hash]) {
+    table->nNodes++;
+    return SYM_SUCCESS;
+  } else {
+    log_error(NULL_ERROR, "ERROR: Node could not be inserted into the symboltable.\n");
+    return SYM_FAILED;
+  }
 }
 
-// lookup a symbol in a table;
+// lookup a symbol in a scope and its parent scopes
 // returns NULL if symbol does not exist
 SymtabNode *symtab_lookup(Symtab *table, char *key) {
   log_assert(table, "table");
@@ -74,18 +81,14 @@ SymtabNode *symtab_lookup(Symtab *table, char *key) {
   SymtabNode *target = NULL;
 
   // search bucket for target
-  int firstLoop = true;
-  do {
-    if (!firstLoop)
-      table = table->parent;
-    target = table->buckets[hash];
-    if (target) {
-      target = symtab_search_bucket(target, key);
-    }
-    firstLoop = false;
-  } while (target == NULL && table->parent);
-
-  return target;
+  if (table->buckets && table->buckets[hash])
+    target = symtab_search_bucket(table->buckets[hash], key);
+  if (target)
+    return target;
+  else if (table->parent != NULL) /* search parent scope if it exists */
+    return symtab_lookup(table->parent, key);
+  else
+    return NULL;
 }
 
 SymtabNode *symtab_search_bucket(SymtabNode *node, char *key) {

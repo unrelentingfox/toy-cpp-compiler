@@ -50,7 +50,7 @@ void sem_populate_init_declarator(TreeNode *treenode, Type *type) {
     sem_populate_init_declarator(treenode->children[0], type);
     break;
   case IDENTIFIER:
-    if ((symtab_insert(sem_current, treenode->token->text, type))) {
+    if ((symtab_insert(sem_current, treenode->token->text, type)) == SYM_REDECLARED) {
       log_sem_error(treenode->token->filename,
                     treenode->token->lineno,
                     "symbol was already declared",

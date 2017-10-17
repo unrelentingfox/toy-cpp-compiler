@@ -5,6 +5,12 @@
 
 #include "type.h"
 
+enum symtabErrors {
+  SYM_SUCCESS,
+  SYM_FAILED,
+  SYM_REDECLARED
+};
+
 typedef struct SymbolTableNode {
   char *key;                    // the name of the symbol.
   struct Type *type;                    // type info for the symbol.
