@@ -171,7 +171,8 @@ char *humanReadable(int nonterm) {
   case declaration_statement:
     return strdup("declaration_statement");
     break;
-  case declaration_seq:
+  case declaration_seq-1:
+  case declaration_seq-2:
     return strdup("declaration_seq");
     break;
   case declaration:

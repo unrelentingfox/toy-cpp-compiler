@@ -14,7 +14,7 @@ void log_assert(bool val, char *name) {
     return;
   } else {
     fprintf(stderr, "ERROR: Unexpected NULL value for variable: \"%s\".", name);
-    exit(NULL_ERROR);
+    exit(INTERNAL_ERROR);
   }
 }
 

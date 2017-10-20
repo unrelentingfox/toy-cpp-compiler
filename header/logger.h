@@ -12,7 +12,7 @@ typedef enum ErrorTypes {
   SYN_ERROR,
   SEM_ERROR,
   SUP_ERROR,
-  NULL_ERROR
+  INTERNAL_ERROR
 } ErrorTypes;
 
 void log_init_global();

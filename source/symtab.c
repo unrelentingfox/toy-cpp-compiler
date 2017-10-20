@@ -7,11 +7,11 @@
 #include <stdbool.h>
 
 // creates a new symbol table, whose scope is local to (or inside) parent
-Symtab *symtab_new_tree(Symtab *parent) {
+Symtab *symtab_new_table(Symtab *parent) {
   Symtab *new_symtab = NULL;
   // allocate the hashtable
   if ((new_symtab = (Symtab *)malloc(sizeof(Symtab))) == NULL) {
-    log_error(NULL_ERROR, "ERROR: could not allocate new hashtable.");
+    log_error(INTERNAL_ERROR, "ERROR: could not allocate new hashtable.");
   }
   // set parent scope
   if (parent)
@@ -20,7 +20,7 @@ Symtab *symtab_new_tree(Symtab *parent) {
     parent = NULL;
   //allocate bucket pointers
   if ((new_symtab->buckets = (SymtabNode **)malloc(sizeof(SymtabNode *) * TABLE_SIZE)) == NULL) {
-    log_error(NULL_ERROR, "ERROR: could not allocate new hashtable.");
+    log_error(INTERNAL_ERROR, "ERROR: could not allocate new hashtable.");
   }
   for (int i = 0; i < TABLE_SIZE; i++) {
     new_symtab->buckets[i] = NULL;
@@ -42,12 +42,9 @@ SymtabNode *symtab_new_node(char *key, Type *type) {
 
 // insert a symbol into a table
 // return values correlate with symtabErrors enum
-int symtab_insert(Symtab *table, char* key, Type *type) {
+int symtab_insert(Symtab *table, char *key, Type *type) {
   log_assert(table, "table");
   log_assert(key, "key");
-  if (symtab_lookup(table, key)){
-    return SYM_REDECLARED;
-  }
 
   // create the node
   SymtabNode *node = symtab_new_node(key, type);
@@ -58,15 +55,18 @@ int symtab_insert(Symtab *table, char* key, Type *type) {
     table->buckets[hash] = node;
   } else {
     SymtabNode *tmp = table->buckets[hash];
-    while (tmp->next)
+    while (tmp->next){
+      if(strcmp(tmp->key, key) == 0)
+        return SYM_REDECLARED;
       tmp = tmp->next;
+    }
     tmp->next = node;
   }
   if (table->buckets[hash]) {
     table->nNodes++;
     return SYM_SUCCESS;
   } else {
-    log_error(NULL_ERROR, "ERROR: Node could not be inserted into the symboltable.\n");
+    log_error(INTERNAL_ERROR, "ERROR: Node could not be inserted into the symboltable.\n");
     return SYM_FAILED;
   }
 }
@@ -124,8 +124,8 @@ void symtab_print_table(Symtab *table) {
     if (table->buckets[i]) {
       printf("%d : (BUCKET)", i);
       symtab_print_bucket(table->buckets[i]);
-    } else
-      printf("%d : (NULL) \n", i);
+    } //else
+    //   printf("%d : (NULL) \n", i);
   }
 }
 
@@ -137,18 +137,16 @@ void symtab_print_bucket(SymtabNode *node) {
     if (node) {
       printf("->%s(%d)", node->key, node->type->basetype);
       switch (node->type->basetype) {
-      case FUNCTION_T:
-        if (node->type->info.function.parameters) {
-          Parameter *temp = node->type->info.function.parameters;
-          while (temp->next) {
-            printf("-(p:%d)", temp->type->basetype);
-            temp = temp->next;
+        case FUNCTION_T:
+          if (node->type->info.function.parameters) {
+            Parameter **params = node->type->info.function.parameters;
+            for (int i = 0; i < node->type->info.function.nparams; i++) {
+              printf("-(p:%d)", params[i]->type->basetype);
+            }
           }
-          printf("-(p:%d)", temp->type->basetype);
-        }
-        break;
-      case ARRAY_T:
-        printf("-[%d]", node->type->info.array.size);
+          break;
+        case ARRAY_T:
+          printf("-[%d]", node->type->info.array.size);
       }
     }
     firstLoop = false;

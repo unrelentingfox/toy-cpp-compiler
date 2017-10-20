@@ -21,6 +21,18 @@ typedef enum BaseType {
   UNKNOWN_T
 } BaseType;
 
+typedef enum FunctionStatus {
+  FUNC_NEW,
+  FUNC_DECLARED,
+  FUNC_DEFINED
+} FunctionStatus;
+
+typedef enum TypeCompareResults {
+  TYPE_NOT_EQUAL,
+  TYPE_EQUAL,
+  TYPE_NULL_PARAMETERS
+} TypeCompareResults;
+
 typedef struct ArrayInfo {
   int size; /* allow for missing size, e.g. -1 */
   struct Type *type; /* pointer to c_type for elements in array,
@@ -34,9 +46,16 @@ typedef struct ClassInfo {    /* structs */
   struct SymbolTable *private;
 } ClassInfo;
 
+typedef struct Parameter {
+  struct Type *type;
+  struct SymtabNode *symtabnode;
+} Parameter;
+
 typedef struct FunctionInfo {
+  int status; /* either FUNC_DECLARED or FUNC_DEFINED */
   struct Type *returntype;
-  struct Parameter *parameters;
+  int nparams;
+  struct Parameter **parameters;
   struct SymbolTable *symtab;
 } FunctionInfo;
 
@@ -50,15 +69,11 @@ typedef struct Type {
   } info;
 } Type;
 
-/* TODO: turn parameter list into a hash table */
-typedef struct Parameter {
-  Type *type;
-  struct Parameter *next;
-} Parameter;
+BaseType type_from_terminal(enum yytokentype terminal);
 
-int type_from_terminal(int terminal);
-
-Type *type_new(enum BaseType basetype);
+Type *type_new(BaseType basetype);
 Parameter *type_new_parameter(Type *type);
+
+TypeCompareResults type_compare(Type *type1, Type *type2);
 
 #endif

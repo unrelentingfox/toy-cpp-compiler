@@ -402,7 +402,7 @@ original_namespace_name:
 
 class_name:
      CLASS_NAME           { $$ = tree_new(class_name, 1, $1); }
-   | template_id           { $$ = tree_new(class_name, 1, $1); }
+   | template_id           { yyerror("template functions"); $$ = NULL; }
    ;
 
 
@@ -805,8 +805,8 @@ declaration_statement:
  *----------------------------------------------------------------------*/
 
 declaration_seq:
-     declaration           { $$ = tree_new(declaration_seq, 1, $1); }
-   | declaration_seq declaration           { $$ = tree_new(declaration_seq, 2, $1, $2); }
+     declaration           { $$ = tree_new(declaration_seq-1, 1, $1); }
+   | declaration_seq declaration           { $$ = tree_new(declaration_seq-2, 2, $1, $2); }
    ;
 
 
@@ -1058,7 +1058,7 @@ direct_declarator:
    | CLASS_NAME COLONCOLON CLASS_NAME '(' parameter_declaration_clause ')'           { $$ = tree_new(direct_declarator-4, 6, $1, $2, $3, $4, $5, $6); }
    | direct_declarator '[' constant_expression ']'           { $$ = tree_new(direct_declarator-5, 4, $1, $2, $3, $4); }
    | direct_declarator '[' ']'           { $$ = NULL; yyerror("size of array is unknown"); }        
-   | '(' declarator ')'           { $$ = tree_new(direct_declarator-7, 3, $1, $2, $3); }
+   | '(' declarator ')'           { $$ = tree_new(direct_declarator-6, 3, $1, $2, $3); }
    ;
 
 
