@@ -346,8 +346,11 @@ static int set_yylval(int category) {
   yylval.treenode->cnum = 0;
 
   // Create the Token to put in the leaf node.
-  yylval.treenode->token = (Token*)malloc(sizeof(Token));
-  yylval.treenode->token->filename = strdup(filename);
+  yylval.treenode->token = (Token*)calloc(1,sizeof(Token));
+  if(filename)
+    yylval.treenode->token->filename = strdup(filename);
+  else
+    yylval.treenode->token->filename = strdup("");
   yylval.treenode->token->category = category;
   if(yytext)
     yylval.treenode->token->text = strdup(yytext);

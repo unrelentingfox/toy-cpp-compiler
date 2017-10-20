@@ -46,6 +46,10 @@ int symtab_insert(Symtab *table, char *key, Type *type) {
   log_assert(table, "table");
   log_assert(key, "key");
 
+  //check for redeclaration
+  if(symtab_lookup(table, key))
+    return SYM_REDECLARED;
+
   // create the node
   SymtabNode *node = symtab_new_node(key, type);
 
@@ -55,9 +59,7 @@ int symtab_insert(Symtab *table, char *key, Type *type) {
     table->buckets[hash] = node;
   } else {
     SymtabNode *tmp = table->buckets[hash];
-    while (tmp->next){
-      if(strcmp(tmp->key, key) == 0)
-        return SYM_REDECLARED;
+    while (tmp->next) {
       tmp = tmp->next;
     }
     tmp->next = node;
@@ -77,6 +79,7 @@ SymtabNode *symtab_lookup(Symtab *table, char *key) {
   log_assert(table, "table");
   log_assert(key, "key");
   int hash = symtab_hash(key) % TABLE_SIZE;
+  //printf("hash: %d\n", hash);
 
   SymtabNode *target = NULL;
 
@@ -125,7 +128,7 @@ void symtab_print_table(Symtab *table) {
       printf("%d : (BUCKET)", i);
       symtab_print_bucket(table->buckets[i]);
     } //else
-    //   printf("%d : (NULL) \n", i);
+      //printf("%d : (NULL) \n", i);
   }
 }
 

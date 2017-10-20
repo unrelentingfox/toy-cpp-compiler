@@ -46,6 +46,8 @@ TreeNode *tree_new(int nonterm, int va_num, ...) {
   return ptr;
 }
 
+/* TODO: this function causes pointers to be overwiritten and causes the infinite loop 
+ valgrind also says that memory is lost during this function. */
 int tree_print(TreeNode *node, int depth) {
   int i;
 

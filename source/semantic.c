@@ -26,7 +26,7 @@ int sem_init_global() {
 void sem_populate(TreeNode *treenode) {
   int i;
   if (treenode == NULL) {
-    printf("tree empty!\n");
+    //printf("tree empty!\n");
     return;
   }
   switch (treenode->label) {
@@ -60,7 +60,8 @@ void sem_populate(TreeNode *treenode) {
  * @param      type      The type
  */
 void sem_populate_function_definition(TreeNode *treenode, Type *type) {
-  printf("POPULATE FUNCTION DEF\n");
+  //printf("POPULATE FUNCTION DEF\n");
+
   switch (treenode->label) {
     case function_definition-1:
       /* get the function return type and pass it into the recursive call */
@@ -74,9 +75,13 @@ void sem_populate_function_definition(TreeNode *treenode, Type *type) {
       sem_populate_function_definition(treenode->children[2], type);
       break;
     case direct_declarator-1: { /* direct_declarator '(' parameter_declaration_clause ')' */
-      SymtabNode *tempnode = symtab_lookup(sem_current, treenode->children[0]->token->text);
+      //printf("function: %s\n", treenode->children[0]->token->text);
+      //printf("nodes(%d) text(%s)", sem_current->nNodes, treenode->children[0]->token->text);
+      SymtabNode *tempnode = NULL;
+      tempnode = symtab_lookup(sem_current, treenode->children[0]->token->text);
+      //printf("HERE\n");
       if (tempnode) { /* check if function has been declared */
-        printf("NODE EXISTS!\n");
+        //printf("NODE EXISTS!\n");
         if (tempnode->type->basetype != FUNCTION_T) {
           /* if the symbol was defined as a different type, error */
           log_sem_error(treenode->children[0]->token->filename,
@@ -91,7 +96,7 @@ void sem_populate_function_definition(TreeNode *treenode, Type *type) {
                         "function was already defined",
                         treenode->children[0]->token->text);
           return;
-        } else if (type_compare(tempnode->type->info.function.returntype, type) == TYPE_EQUAL) {
+        } else if (type_compare(tempnode->type->info.function.returntype, type) == TYPE_NOT_EQUAL) {
           /* if it was declared, but the return types don't match, error */
           log_sem_error(treenode->children[0]->token->filename,
                         treenode->children[0]->token->lineno,
@@ -101,20 +106,27 @@ void sem_populate_function_definition(TreeNode *treenode, Type *type) {
           type = tempnode->type;
         }
       } else { /* if not defined, create new function type and add to symtab */
-        printf("CREATING FUNCTION!!!!\n");
+        //printf("CREATING FUNCTION!!!!\n");
         Type *temptype = type_new(FUNCTION_T);
         temptype->info.function.returntype = type;
         type = temptype;
-        symtab_insert(sem_current, treenode->children[0]->token->text, type);
+        if (symtab_insert(sem_current, treenode->children[0]->token->text, type) == SYM_REDECLARED) {
+          log_sem_error(treenode->children[0]->token->filename,
+                        treenode->children[0]->token->lineno,
+                        "symbol was already declared",
+                        treenode->children[0]->token->text);
+        }
       }
       /* create function symbtab */
       type->info.function.symtab = symtab_new_table(sem_current);
       /* add parameters to symtab */
+      sem_current = type->info.function.symtab;
       if (treenode->children[2]->label == parameter_declaration ||
           treenode->children[2]->label == parameter_declaration_list) {
         sem_populate_parameter_definition(treenode->children[2], type, 0);
         type->info.function.status = FUNC_DEFINED;
       }
+      sem_current = sem_current->parent;
     }
     break;
 //  case direct_declarator-2: /* CLASS_NAME '(' parameter_declaration_clause ')'  */
@@ -140,6 +152,7 @@ void sem_populate_function_definition(TreeNode *treenode, Type *type) {
  * @param      functype  The type of the parent function
  */
 void sem_populate_parameter_declaration(TreeNode *treenode, Type *functype) {
+  //printf("PARAM_DELC\n");
   if (functype->basetype != FUNCTION_T) {
     return;
   }
@@ -168,6 +181,7 @@ void sem_populate_parameter_declaration(TreeNode *treenode, Type *functype) {
  *             we have seen so far.
  */
 int sem_populate_parameter_definition(TreeNode *treenode, Type *functype, int paramcount) {
+  //printf("PARAM_DEFI\n");
   if (functype->basetype != FUNCTION_T) {
     return paramcount;
   }
@@ -178,7 +192,7 @@ int sem_populate_parameter_definition(TreeNode *treenode, Type *functype, int pa
       break;
     case parameter_declaration: {
       /* create the parameter type */
-      Type *temptype;
+      Type *temptype = NULL;
       if (treenode->children[0]->label == IDENTIFIER) { /* class instance */
         temptype = sem_get_class_type(treenode->children[0]->token);
       }
@@ -189,7 +203,12 @@ int sem_populate_parameter_definition(TreeNode *treenode, Type *functype, int pa
         case FUNC_NEW: {
           /* if the function is being defined and declared at the same time
           create the parameters and insert them into the symbol table. */
-          symtab_insert(functype->info.function.symtab, treenode->children[1]->token->text, temptype);
+          if (symtab_insert(functype->info.function.symtab, treenode->children[1]->token->text, temptype)) {
+            log_sem_error(treenode->children[1]->token->filename,
+                          treenode->children[1]->token->lineno,
+                          "symbol was already declared",
+                          treenode->children[1]->token->text);
+          }
           functype->info.function.parameters[functype->info.function.nparams] = type_new_parameter(temptype);
           functype->info.function.nparams++;
         }
@@ -205,7 +224,12 @@ int sem_populate_parameter_definition(TreeNode *treenode, Type *functype, int pa
                           treenode->children[1]->token->text);
           } else if (functype->info.function.parameters[paramcount]) {
             if (type_compare(functype->info.function.parameters[paramcount]->type, temptype) == TYPE_EQUAL) {
-              symtab_insert(functype->info.function.symtab, treenode->children[1]->token->text, temptype);
+              if (symtab_insert(functype->info.function.symtab, treenode->children[1]->token->text, temptype)) {
+                log_sem_error(treenode->children[1]->token->filename,
+                              treenode->children[1]->token->lineno,
+                              "symbol was already declared",
+                              treenode->children[1]->token->text);
+              }
             } else {
               log_sem_error(treenode->children[1]->token->filename,
                             treenode->children[1]->token->lineno,
@@ -259,7 +283,12 @@ void sem_populate_init_declarator(TreeNode *treenode, Type *type) {
           treenode->children[2]->label == parameter_declaration_list)
         sem_populate_parameter_declaration(treenode->children[2], temp);
       type = temp;
-      symtab_insert(sem_current, treenode->children[0]->token->text, type);
+      if (symtab_insert(sem_current, treenode->children[0]->token->text, type) == SYM_REDECLARED) {
+        log_sem_error(treenode->children[0]->token->filename,
+                      treenode->children[0]->token->lineno,
+                      "symbol was already declared",
+                      treenode->children[0]->token->text);
+      }
     }
     break;
     case direct_declarator-5: { /* direct_declarator '[' constant_expression ']' */
