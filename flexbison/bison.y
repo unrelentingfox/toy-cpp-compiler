@@ -757,8 +757,8 @@ compound_statement:
 
 
 statement_seq:
-     statement           { $$ = tree_new(statement_seq, 1, $1); }
-   | statement_seq statement           { $$ = tree_new(statement_seq, 2, $1, $2); }
+     statement           { $$ = tree_new(statement_seq-1, 1, $1); }
+   | statement_seq statement           { $$ = tree_new(statement_seq-2, 2, $1, $2); }
    ;
 
 

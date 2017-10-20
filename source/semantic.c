@@ -30,9 +30,11 @@ void sem_populate(TreeNode *treenode) {
     return;
   }
   switch (treenode->label) {
+    case statement_seq-1:
     case declaration_seq-1:
       sem_populate(treenode->children[0]);
       break;
+    case statement_seq-2:
     case declaration_seq-2:
       sem_populate(treenode->children[0]);
       sem_populate(treenode->children[1]);
@@ -44,12 +46,17 @@ void sem_populate(TreeNode *treenode) {
       sem_populate_init_declarator(treenode->children[1],
                                    type_new(type_from_terminal(treenode->children[0]->label)));
       break;
-  }
+    case IDENTIFIER:
+      if (!symtab_lookup(sem_current, treenode->token->text))
+        log_sem_error(treenode->token->filename,
+                      treenode->token->lineno,
+                      "symbol has not been declared in this scope",
+                      treenode->token->text);
 
-  // if (treenode->label < 0) {
-  //   for (i = 0; i < treenode->cnum; i++)
-  //     sem_populate(treenode->children[i]);
-  // }
+    default:
+      for (i = 0; i < treenode->cnum; i++)
+        sem_populate(treenode->children[i]);
+  }
 }
 
 /**
@@ -127,6 +134,8 @@ void sem_populate_function_definition(TreeNode *treenode, Type *type) {
         type->info.function.status = FUNC_DEFINED;
       }
       sem_current = sem_current->parent;
+      /* set sem_current to function scope */
+      sem_current = type->info.function.symtab;
     }
     break;
 //  case direct_declarator-2: /* CLASS_NAME '(' parameter_declaration_clause ')'  */
@@ -134,11 +143,8 @@ void sem_populate_function_definition(TreeNode *treenode, Type *type) {
 //  case direct_declarator-4: /* CLASS_NAME COLONCOLON CLASS_NAME '(' parameter_declaration_clause ')' */
     /* TODO: implement class method definitions */
     case compound_statement: {
-      if (type->info.function.symtab) {
-        sem_current = type->info.function.symtab;
-        // sem_populate(treenode->children[1]);
-        sem_current = sem_current->parent;
-      }
+      sem_populate(treenode->children[1]);
+      sem_current = sem_current->parent;
     }
     break;
   }
