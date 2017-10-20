@@ -35,12 +35,14 @@ int main(int argc, char **argv) {
   // tree_print(astRoot, 0);
   sem_init_global();
   sem_populate(astRoot);
-  symtab_print_table(sem_global);
-  if(symtab_lookup(sem_global, "testfunction")){
-    printf("found function\n");
-  }
+  symtab_print_table(sem_global, 0);
+  // SymtabNode *temp = symtab_lookup(sem_global, "testfunction");
+  // if (temp) {
+  //   printf("found function\n");
+  //   symtab_print_table(temp->type->info.function.symtab,);
+  // }
 
-  
+
   if (log_first_error) {
     log_final_status();
     return log_first_error;

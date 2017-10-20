@@ -47,7 +47,7 @@ int symtab_insert(Symtab *table, char *key, Type *type) {
   log_assert(key, "key");
 
   //check for redeclaration
-  if(symtab_lookup(table, key))
+  if (symtab_lookup(table, key))
     return SYM_REDECLARED;
 
   // create the node
@@ -121,14 +121,20 @@ int symtab_hash(char *key) {
   return hash % TABLE_SIZE;
 }
 
-void symtab_print_table(Symtab *table) {
+void symtab_print_table(Symtab *table, int indent) {
   log_assert(table, "table");
   for (int i = 0; i < TABLE_SIZE; i++) {
     if (table->buckets[i]) {
-      printf("%d : (BUCKET)", i);
+      for (int j = 0; j < indent; j++) {
+        printf(" ");
+      }
+      printf("Table[%d]", i);
       symtab_print_bucket(table->buckets[i]);
-    } //else
-      //printf("%d : (NULL) \n", i);
+      if (table->buckets[i]->type->basetype == FUNCTION_T
+          && table->buckets[i]->type->info.function.symtab) {
+        symtab_print_table(table->buckets[i]->type->info.function.symtab, indent + 4);
+      }
+    }
   }
 }
 
@@ -138,7 +144,7 @@ void symtab_print_bucket(SymtabNode *node) {
     if (!firstLoop)
       node = node->next;
     if (node) {
-      printf("->%s(%d)", node->key, node->type->basetype);
+      printf(" -> %s(%d)", node->key, node->type->basetype);
       switch (node->type->basetype) {
         case FUNCTION_T:
           if (node->type->info.function.parameters) {
