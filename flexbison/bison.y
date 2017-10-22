@@ -1205,8 +1205,8 @@ class_key:
 
 
 member_specification:
-     member_declaration member_specification_opt           { $$ = tree_new(member_specification, 2, $1, $2); }
-   | access_specifier ':' member_specification_opt           { $$ = tree_new(member_specification, 3, $1, $2, $3); }
+     member_declaration member_specification_opt           { $$ = tree_new(member_specification-1, 2, $1, $2); }
+   | access_specifier ':' member_specification_opt           { $$ = tree_new(member_specification-2, 3, $1, $2, $3); }
    ;
 
 

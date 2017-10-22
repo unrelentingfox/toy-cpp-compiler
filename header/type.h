@@ -27,6 +27,12 @@ typedef enum FunctionStatus {
   FUNC_DEFINED
 } FunctionStatus;
 
+typedef enum ClassStatus {
+  CLASS_NEW,
+  CLASS_DECLARED,
+  CLASS_DEFINED
+} ClassStatus;
+
 typedef enum TypeCompareResults {
   TYPE_NOT_EQUAL,
   TYPE_EQUAL,
@@ -42,9 +48,14 @@ typedef struct ArrayInfo {
 typedef struct ClassInfo {    /* structs */
   char *name;
   int nFields;
+  enum ClassStatus status;
   struct SymbolTable *public;
   struct SymbolTable *private;
 } ClassInfo;
+
+typedef struct ClassInstanceInfo {
+  struct Type* classtype;
+} ClassInstanceInfo;
 
 typedef struct Parameter {
   struct Type *type;
@@ -52,7 +63,7 @@ typedef struct Parameter {
 } Parameter;
 
 typedef struct FunctionInfo {
-  int status; /* either FUNC_DECLARED or FUNC_DEFINED */
+  enum FunctionStatus status; /* either FUNC_DECLARED or FUNC_DEFINED */
   struct Type *returntype;
   int nparams;
   struct Parameter **parameters;
@@ -65,7 +76,7 @@ typedef struct Type {
     ArrayInfo array;
     ClassInfo class;
     FunctionInfo function;
-    struct Type *parentclass;
+    ClassInstanceInfo classinstance;
   } info;
 } Type;
 

@@ -49,6 +49,7 @@
 /*
  * Debug info 
  */
+int firstcall = 1;
 char* filename;
 int errors;
 int lineno;
@@ -77,6 +78,7 @@ static void single_line_comment();
 static void skip_until_eol(void);
 static void skip_comment(void);
 static int check_identifier(char *);
+void set_filename(char* fname);
 %}
 
 intsuffix   ([uU][lL]?)|([lL][uU]?)
@@ -410,4 +412,18 @@ static void handle_include()
       // Reset lineno
       lineno = 1;
    }
+}
+
+void set_filename(char* fname){
+  if(!fname){
+    return;
+  } else {
+    if(firstcall) {
+      firstcall = 0;
+    } else {
+      yy_flush_buffer(YY_CURRENT_BUFFER);
+    }
+    filename = strdup(fname);
+    lineno = 1;
+  }
 }

@@ -21,7 +21,7 @@ void log_assert(bool val, char *name) {
 void log_error(ErrorTypes errortype, const char *format, ...) {
   va_list args;
   va_start(args, format);
-  fprintf(stderr, format, args);
+  vfprintf(stderr, format, args);
   va_end(args);
   if (log_first_error == 0)
     log_first_error = errortype;

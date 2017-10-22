@@ -133,6 +133,9 @@ void symtab_print_table(Symtab *table, int indent) {
       if (table->buckets[i]->type->basetype == FUNCTION_T
           && table->buckets[i]->type->info.function.symtab) {
         symtab_print_table(table->buckets[i]->type->info.function.symtab, indent + 4);
+      } else if(table->buckets[i]->type->basetype == CLASS_T
+          && table->buckets[i]->type->info.class.public) {
+        symtab_print_table(table->buckets[i]->type->info.class.public, indent + 4);
       }
     }
   }

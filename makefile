@@ -23,7 +23,7 @@ HEADERS+=$(GEN_HEADERS)
 SOURCES_WITH_DIR=$(addprefix $(SOURCE_DIR)/, $(SOURCES))
 OBJECTS=$(SOURCES_WITH_DIR:.c=.o)
 HEADERS_WITH_PATH=$(addprefix $(HEADER_DIR)/, $(HEADERS))
-EXECUTABLE=$(addprefix $(BIN_DIR)/, 120++)
+EXECUTABLE=120++
 
 all: $(SOURCES_WITH_DIR) $(EXECUTABLE) $(HEADERS_WITH_PATH)
 
@@ -40,6 +40,7 @@ $(SOURCE_DIR)/$(BISON_FILE).c $(HEADER_DIR)/$(BISON_FILE).h: $(FLEXBISON_DIR)/$(
 	$(YACC) -dt --verbose $<
 	mv $(BISON_FILE).tab.c $(SOURCE_DIR)/$(BISON_FILE).c
 	mv $(BISON_FILE).tab.h $(HEADER_DIR)/$(BISON_FILE).h
+	mv $(BISON_FILE).output $(FLEXBISON_DIR)/$(BISON_FILE).output
 
 # Create the flex.c file
 $(SOURCE_DIR)/$(FLEX_FILE).c: $(FLEXBISON_DIR)/$(FLEX_FILE).l
@@ -48,4 +49,4 @@ $(SOURCE_DIR)/$(FLEX_FILE).c: $(FLEXBISON_DIR)/$(FLEX_FILE).l
 # Remove generated files
 clean:
 	rm -f $(EXECUTABLE) $(OBJECTS)
-	rm -f $(HEADER_DIR)/$(GEN_HEADERS) $(SOURCE_DIR)/$(GEN_SOURCES)
+	rm -f $(HEADER_DIR)/$(GEN_HEADERS) $(SOURCE_DIR)/$(GEN_SOURCES) $(FLEXBISON_DIR)/$(BISON_FILE).output

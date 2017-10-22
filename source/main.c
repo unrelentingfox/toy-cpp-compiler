@@ -6,45 +6,39 @@
 #include "../header/logger.h"
 
 extern FILE *yyin;
-extern char *filename;
-extern int lineno;
 extern int yyparse();
 extern TreeNode *astRoot;
 extern Symtab *sem_global;
 extern int log_first_error;
+extern void set_filename(char* fname);
 
 int main(int argc, char **argv) {
   log_init_global();
   if (argc > 1) {
     for (int i = 1; i < argc; i++) {
+      printf("Attempting to open \"%s\"\n", argv[i]);
       yyin = fopen(argv[i], "r");
-      if (!yyin) {
-        //error
-      } else {
+      if (yyin) {
+        printf("Success.\n");
         // Change filename and reset yylineno
-        filename = strdup(argv[i]);
-        lineno = 1;
-
-        if (yyparse()) {
-          printf("ERROR");
-        }
+        set_filename(argv[i]);
+        // Lexical and Syntax analysis
+        yyparse();
+        // Semantic analysis
+        sem_init_global();
+        sem_populate(astRoot);
+        log_final_status();
+        // debug
+        printf("\nVisual Representation of hashtable:\n");
+        symtab_print_table(sem_global, 0);
+        fclose(yyin);
+      } else {
+        log_error(INTERNAL_ERROR, "Could not open \"%s\"\n", argv[i]);
       }
     }
   }
 
-  // tree_print(astRoot, 0);
-  sem_init_global();
-  sem_populate(astRoot);
-  symtab_print_table(sem_global, 0);
-  // SymtabNode *temp = symtab_lookup(sem_global, "testfunction");
-  // if (temp) {
-  //   printf("found function\n");
-  //   symtab_print_table(temp->type->info.function.symtab,);
-  // }
-
-
   if (log_first_error) {
-    log_final_status();
     return log_first_error;
   }
 }
