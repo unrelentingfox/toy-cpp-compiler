@@ -41,13 +41,15 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "token.h"
-#include "bison.tab.h"
-#include "tree.h"
+#include "../header/token.h"
+#include "../header/bison.h"
+#include "../header/tree.h"
+#include "../header/logger.h"
 
 /*
  * Debug info 
  */
+int firstcall = 1;
 char* filename;
 int errors;
 int lineno;
@@ -67,6 +69,7 @@ int typenametable_insert(char *s, int cat);
 int typenametable_lookup(char *s);
 
 static void lexerr(char *s);
+static void sup_error(char *message);
 static void handle_include();
 static int set_yylval(int category);
 static void record_comment();
@@ -75,6 +78,7 @@ static void single_line_comment();
 static void skip_until_eol(void);
 static void skip_comment(void);
 static int check_identifier(char *);
+void set_filename(char* fname);
 %}
 
 intsuffix   ([uU][lL]?)|([lL][uU]?)
@@ -206,7 +210,7 @@ stringtext  ([^"])|(\\.)
 "throw"                               { return set_yylval(THROW); }
 "true"                                { return set_yylval(TRUE); }
 "try"                                 { return set_yylval(TRY); }
-"typedef"                             { return set_yylval(TYPEDEF); }
+"typedef"                             { sup_error(yytext); }
 "typeid"                              { return set_yylval(TYPEID); }
 "typename"                            { return set_yylval(TYPENAME); }
 "union"                               { return set_yylval(UNION); }
@@ -215,7 +219,7 @@ stringtext  ([^"])|(\\.)
 "virtual"                             { return set_yylval(VIRTUAL); }
 "void"                                { return set_yylval(VOID); }
 "volatile"                            { return set_yylval(VOLATILE); }
-"wchar_t"                             { return set_yylval(WCHAR_T); }
+"wchar_t"                             { sup_error(yytext); }
 "while"                               { return set_yylval(WHILE); }
 [a-zA-Z_][a-zA-Z_0-9]*                { return set_yylval(check_identifier(yytext)); }
 "0"[xX][0-9a-fA-F]+{intsuffix}?       { return set_yylval(INTEGER); }
@@ -336,26 +340,30 @@ check_identifier(char *s)
 }
 
 static int set_yylval(int category) {
+  // TODO: move this functionality out into tree.c
+
   // Create TreeNode leaf node.
   yylval.treenode = (TreeNode*)calloc(1,sizeof(TreeNode));
-  yylval.treenode->leaf = true;
-  yylval.treenode->nonterm = 0;
+  yylval.treenode->label = category;
   yylval.treenode->cnum = 0;
 
   // Create the Token to put in the leaf node.
-  yylval.treenode->token = (Token*)malloc(sizeof(Token));
-  yylval.treenode->token->filename = strdup(filename);
+  yylval.treenode->token = (Token*)calloc(1,sizeof(Token));
+  if(filename)
+    yylval.treenode->token->filename = strdup(filename);
+  else
+    yylval.treenode->token->filename = strdup("");
   yylval.treenode->token->category = category;
   if(yytext)
     yylval.treenode->token->text = strdup(yytext);
   else
     yylval.treenode->token->text = strdup("");
   yylval.treenode->token->lineno = lineno;
-  if(category == INT)
+  if(category == INTEGER)
     yylval.treenode->token->ival = atoi(yytext);
   else
     yylval.treenode->token->ival = -1;
-  if(category == DOUBLE)
+  if(category == FLOATING)
     yylval.treenode->token->dval = atof(yytext);
   else
     yylval.treenode->token->dval = -1;
@@ -370,12 +378,13 @@ static int set_yylval(int category) {
 /*
  * Handle lexical errors.
  */
-static void lexerr(char *s)
+static void lexerr(char *message)
 {
-  errors++;
-  fprintf(stderr, "LEXICAL ERROR: In file (%s) line number (%d) %s",filename, lineno, s);
-  fprintf(stderr, ", token = \"%s\"\n", yytext);
-  exit(1);
+  log_lex_error(yylval.treenode->token->filename,yylval.treenode->token->lineno, message,  yylval.treenode->token->text);
+}
+
+static void sup_error(char *message){
+  log_sup_error(yylval.treenode->token->filename,yylval.treenode->token->lineno, message,  yylval.treenode->token->text);
 }
 
 /*
@@ -403,4 +412,18 @@ static void handle_include()
       // Reset lineno
       lineno = 1;
    }
+}
+
+void set_filename(char* fname){
+  if(!fname){
+    return;
+  } else {
+    if(firstcall) {
+      firstcall = 0;
+    } else {
+      yy_flush_buffer(YY_CURRENT_BUFFER);
+    }
+    filename = strdup(fname);
+    lineno = 1;
+  }
 }

@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include "tree.h"
-#include "nonterm.h"
+#include "../header/tree.h"
+#include "../header/nonterm.h"
 
 // build a Node
-TreeNode *newTreeNode(int nonterm, int va_num, ...) {
+TreeNode *tree_new(int nonterm, int va_num, ...) {
   TreeNode *ptr = NULL;
   va_list ap;
 
@@ -17,7 +17,7 @@ TreeNode *newTreeNode(int nonterm, int va_num, ...) {
       ptr = va_arg(ap, TreeNode *);
       if (ptr != NULL) {
         va_end(ap);
-        // ptr->nonterm = nonterm;
+        // ptr->label = nonterm;
       }
     } else {
 
@@ -27,8 +27,7 @@ TreeNode *newTreeNode(int nonterm, int va_num, ...) {
         fprintf(stderr, "alctree out of memory\n");
         exit(1);
       }
-      ptr->leaf = false;
-      ptr->nonterm = nonterm;
+      ptr->label = nonterm;
 
       // iterate through children and add them to the new treeNode
       int i = 0;
@@ -47,15 +46,17 @@ TreeNode *newTreeNode(int nonterm, int va_num, ...) {
   return ptr;
 }
 
-int printTree(TreeNode *node, int depth) {
+/* TODO: this function causes pointers to be overwiritten and causes the infinite loop 
+ valgrind also says that memory is lost during this function. */
+int tree_print(TreeNode *node, int depth) {
   int i;
 
-  if (node && node->cnum > 0) {
-    printf("%*s %s: %d\n", depth * 2, " ", humanReadable(node->nonterm), node->cnum);
+  if (node && node->label < 0) {
+    printf("%*s %s: %d\n", depth * 2, " ", humanReadable(node->label), node->cnum);
 
     for (i = 0; i < node->cnum; i++) {
       if (node->children[i]) {
-        printTree(node->children[i], depth + 1);
+        tree_print(node->children[i], depth + 1);
       }
     }
   } else if (node) {
@@ -66,6 +67,6 @@ int printTree(TreeNode *node, int depth) {
 
 
 // delete and free TreeNode and children
-void freeTreeNode(TreeNode *root) {
+void tree_free(TreeNode *root) {
 
 }

@@ -1,4 +1,4 @@
-#include "nonterm.h"
+#include "../header/nonterm.h"
 
 char *humanReadable(int nonterm) {
 
@@ -171,7 +171,8 @@ char *humanReadable(int nonterm) {
   case declaration_statement:
     return strdup("declaration_statement");
     break;
-  case declaration_seq:
+  case declaration_seq-1:
+  case declaration_seq-2:
     return strdup("declaration_seq");
     break;
   case declaration:
@@ -277,6 +278,15 @@ char *humanReadable(int nonterm) {
     return strdup("declarator");
     break;
   case direct_declarator:
+  case direct_declarator-1:
+  case direct_declarator-2:
+  case direct_declarator-3:
+  case direct_declarator-4:
+  case direct_declarator-5:
+  case direct_declarator-6:
+  case direct_declarator-7:
+  case direct_declarator-8:
+  case direct_declarator-9:
     return strdup("direct_declarator");
     break;
   case ptr_operator:
@@ -313,6 +323,8 @@ char *humanReadable(int nonterm) {
     return strdup("parameter_declaration");
     break;
   case function_definition:
+  case function_definition-1:
+  case function_definition-2:
     return strdup("function_definition");
     break;
   case function_body:
