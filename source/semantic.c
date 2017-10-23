@@ -336,6 +336,7 @@ int sem_populate_parameter_definition(TreeNode *treenode, Type *functype, int pa
         }
       }
     }
+    paramcount++;
     break;
   }
   return paramcount;
