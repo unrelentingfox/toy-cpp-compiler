@@ -10,7 +10,7 @@ extern int yyparse();
 extern TreeNode *astRoot;
 extern Symtab *sem_global;
 extern int log_first_error;
-extern void set_filename(char* fname);
+extern void set_filename(char *fname);
 
 int main(int argc, char **argv) {
   log_init_global();
@@ -37,8 +37,10 @@ int main(int argc, char **argv) {
       }
     }
   }
-
+  
   if (log_first_error) {
     return log_first_error;
+  } else {
+    return 0;
   }
 }
