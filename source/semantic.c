@@ -47,7 +47,7 @@ void sem_populate(TreeNode *treenode) {
         sem_populate_class_definition(treenode->children[0], NULL);
       else
         sem_populate_declarators(treenode->children[1],
-                                 type_new(type_from_terminal(treenode->children[0]->label)));
+                                 sem_get_type_from_token(treenode->children[0]));
       break;
     case IDENTIFIER:
       if (!symtab_lookup(sem_current, treenode->token->text))
@@ -93,8 +93,8 @@ void sem_populate_class_definition(TreeNode *treenode, Type *type) {
         }
       } else {
         /* class hasn't been declared so create a new one */
-        type = type_new(CLASS_T);
-        type->info.class.name = strdup(treenode->children[1]->token->text);
+        type = type_new_class(treenode->children[1]->token->text);
+        // type->info.class.name = strdup(treenode->children[1]->token->text);
         symtab_insert(sem_current, type->info.class.name, type);
       }
       /* set sem_current to class scope to add all members */
@@ -112,28 +112,14 @@ void sem_populate_class_definition(TreeNode *treenode, Type *type) {
         sem_populate_class_definition(treenode->children[0], type);
       else if (treenode->children[1]->label == direct_declarator)
         sem_populate_declarators(treenode->children[1],
-                                 type_new(type_from_terminal(treenode->children[0]->label)));
+                                 sem_get_type_from_token(treenode->children[0]));
       else if (treenode->children[1]->label == IDENTIFIER) {
-        switch (treenode->children[0]->label) {
-          case CLASS_NAME: /* handle class instance */
-          case IDENTIFIER: {
-            Type *temptype = sem_get_class_type(treenode->children[0]->token);
-            if (temptype) {
-              type = type_new(CLASS_INSTANCE_T);
-              type->info.classinstance.classtype = temptype;
-              symtab_insert(sem_current, treenode->children[1]->token->text, type);
-            }
-          }
-          break;
-          default:
-            type = type_new(type_from_terminal(treenode->children[0]->label));
-            if (symtab_insert(sem_current, treenode->children[1]->token->text, type) == SYM_REDECLARED)
-              log_sem_error(treenode->children[1]->token->filename,
-                            treenode->children[1]->token->lineno,
-                            "symbol was already declared",
-                            treenode->children[1]->token->text);
-            break;
-        }
+        type = sem_get_type_from_token(treenode->children[0]);
+        if (symtab_insert(sem_current, treenode->children[1]->token->text, type) == SYM_REDECLARED)
+          log_sem_error(treenode->children[1]->token->filename,
+                        treenode->children[1]->token->lineno,
+                        "symbol was already declared",
+                        treenode->children[1]->token->text);
       }
     }
     break;
@@ -152,13 +138,7 @@ void sem_populate_function_definition(TreeNode *treenode, Type *type) {
   //printf("POPULATE FUNCTION DEF\n");
   switch (treenode->label) {
     case function_definition-1:
-      /* get the function return type and pass it into the recursive call */
-      if (treenode->children[0]->label == IDENTIFIER) { /* class instance */
-        type = sem_get_class_type(treenode->children[0]->token);
-      }
-      if (!type) {
-        type = type_new(type_from_terminal(treenode->children[0]->label));
-      }
+      type = sem_get_type_from_token(treenode->children[0]);
       sem_populate_function_definition(treenode->children[1], type);
       sem_populate_function_definition(treenode->children[2], type);
       break;
@@ -195,8 +175,7 @@ void sem_populate_function_definition(TreeNode *treenode, Type *type) {
         }
       } else { /* if not defined, create new function type and add to symtab */
         //printf("CREATING FUNCTION!!!!\n");
-        Type *temptype = type_new(FUNCTION_T);
-        temptype->info.function.returntype = type;
+        Type *temptype = type_new_function(type);
         type = temptype;
         if (symtab_insert(sem_current, treenode->children[0]->token->text, type) == SYM_REDECLARED) {
           log_sem_error(treenode->children[0]->token->filename,
@@ -258,7 +237,7 @@ void sem_populate_parameter_declaration(TreeNode *treenode, Type *functype) {
       sem_populate_parameter_declaration(treenode->children[2], functype);
       break;
     case parameter_declaration: {
-      functype->info.function.parameters[functype->info.function.nparams] = type_new_parameter(type_new(type_from_terminal(treenode->children[0]->label)));
+      functype->info.function.parameters[functype->info.function.nparams]->type = sem_get_type_from_token(treenode->children[0]);
       functype->info.function.nparams++;
     }
     break;
@@ -288,13 +267,7 @@ int sem_populate_parameter_definition(TreeNode *treenode, Type *functype, int pa
       break;
     case parameter_declaration: {
       /* create the parameter type */
-      Type *temptype = NULL;
-      if (treenode->children[0]->label == IDENTIFIER) { /* class instance */
-        temptype = sem_get_class_type(treenode->children[0]->token);
-      }
-      if (!temptype) {
-        temptype = type_new(type_from_terminal(treenode->children[0]->label));
-      }
+      Type *temptype = sem_get_type_from_token(treenode->children[0]);
       switch (functype->info.function.status) {
         case FUNC_NEW: {
           /* if the function is being defined and declared at the same time
@@ -373,9 +346,8 @@ void sem_populate_declarators(TreeNode *treenode, Type *type) {
 //    case direct_declarator-2:   /* CLASS_NAME '(' parameter_declaration_clause ')' */
 //    case direct_declarator-3:   /* CLASS_NAME COLONCOLON declarator_id '(' parameter_declaration_clause ')' */
 //    case direct_declarator-4:   /* CLASS_NAME COLONCOLON CLASS_NAME '(' parameter_declaration_clause ')' */
-      Type *temp = type_new(FUNCTION_T);
+      Type *temp = type_new_function(type);
       temp->info.function.status = FUNC_DECLARED;
-      temp->info.function.returntype = type;
       if (treenode->children[2]->label == parameter_declaration ||
           treenode->children[2]->label == parameter_declaration_list)
         sem_populate_parameter_declaration(treenode->children[2], temp);
@@ -389,9 +361,7 @@ void sem_populate_declarators(TreeNode *treenode, Type *type) {
     }
     break;
     case direct_declarator-5: { /* direct_declarator '[' constant_expression ']' */
-      Type *temp = type_new(ARRAY_T);
-      temp->info.array.type = type;
-      temp->info.array.size = treenode->children[2]->token->ival;
+      Type *temp = type_new_array(type, treenode->children[2]->token->ival);
       type = temp;
       symtab_insert(sem_current, treenode->children[0]->token->text, type);
     }
@@ -400,22 +370,50 @@ void sem_populate_declarators(TreeNode *treenode, Type *type) {
 }
 
 /**
- * @brief      Helper function that checks if a class has been declared yet, if
- *             not, throws an error and returns NULL.
+ * @brief      Attempt to get a type from a token. If the type looks like a
+ *             class, lookup that class. If the class exists, return an instance
+ *             of it. If the class does not exist, throw an error and return
+ *             UNKNOWN_TYPE.
  *
- * @param      token  The token that contains the class name.
+ * @param      treenode  The treenode
  *
- * @return     Either the class type or NULL.
+ * @return     { description_of_the_return_value }
  */
-Type *sem_get_class_type(Token *token) {
-  if (!token)
-    return NULL;
-  Type *newtype = symtab_lookup(sem_current, token->text)->type;
-  if (!newtype) {
-    log_sem_error(token->filename,
-                  token->lineno,
-                  "symbol has not been declared in this scope",
-                  token->text);
+Type *sem_get_type_from_token(TreeNode *treenode) {
+  log_assert(treenode, "treenode");
+  log_assert(treenode->token, "treenode->token");
+  Type *type;
+  // check if class exists and return an instance of that type if it does
+  if (treenode->label == CLASS_NAME || treenode->label == IDENTIFIER) {
+    type = symtab_lookup(sem_current, treenode->token->text)->type;
+    if (type) {
+      return type_new_class_instance(type);
+    } else {
+      log_sem_error(treenode->token->filename,
+                    treenode->token->lineno,
+                    "symbol has not been declared in this scope",
+                    treenode->token->text);
+    }
   }
-  return newtype;
+  // if it wasn't a class then get basetype.
+  type = type_from_terminal(treenode->label);
+  return type;
+}
+
+/**
+ * @brief      Gets the token associated with the nearest leaf child. This
+ *             helper function is for logging errors.
+ *
+ * @param      treenode  The treenode
+ *
+ * @return     { description_of_the_return_value }
+ */
+Token *sem_get_leaf(TreeNode *treenode) {
+  if (treenode->token)
+    return treenode->token;
+  else {
+    log_assert(treenode->children[0], "treenode->children[0]");
+    return sem_get_leaf(treenode->children[0]);
+  }
+  return NULL;
 }

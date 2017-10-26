@@ -28,16 +28,18 @@ int main(int argc, char **argv) {
         sem_init_global();
         sem_populate(astRoot);
         log_final_status();
+        fclose(yyin);
         // debug
         printf("\nVisual Representation of hashtable:\n");
         symtab_print_table(sem_global, 0);
-        fclose(yyin);
+        tree_print(astRoot, 0);
+
       } else {
         log_error(INTERNAL_ERROR, "Could not open \"%s\"\n", argv[i]);
       }
     }
   }
-  
+
   if (log_first_error) {
     return log_first_error;
   } else {

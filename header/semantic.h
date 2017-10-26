@@ -13,5 +13,5 @@ void sem_populate_parameter_declaration(TreeNode *treenode, Type *functype);
 int sem_populate_parameter_definition(TreeNode *treenode, Type *functype, int paramcount);
 void sem_populate_declarators(TreeNode *treenode, Type *type);
 
-Type *sem_get_class_type(Token *token);
+Type *sem_get_type_from_token(TreeNode *treenode);
 #endif

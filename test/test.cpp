@@ -1,33 +1,79 @@
 #include <iostream>
+// #include <fstream>
 
 using namespace std;
 
-int testIntUninit;
-int testIntInit = 2;
-int testArray[2];
-int *testPointer;
-char x, y, z;
-int test5param(char x1, int x2, int x3, int x4, char x5);
-int test2param(int t, int t1);
-int test1param(int t);
-int noparams();
-char testredeclared = 'c';
+int int1 = 1 + 1;
+int int2 = 2;
+float float1 = 1.0;
+double double1 = 1.0;
+char char1 = "c1";
+char char2 = "c2";
+char *cstring1 = "cstring1";
+// string string1 = "string1";
+int array[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-// int testfunction(int t, int t1);
-
+class testclass{
+  int classvariable;
+};
 
 int main() {
-  testfunction();
-  bool variableinmain;
-  return 0;
-  // testfunction(1,1);
-}
 
-int testfunction(int t, int t1) {
-  notdeclared();
-  int  functionscope = 0;
-  if (t) {
-    return 0;
-  }
-  return t1;
+  testclass instance;
+  
+  int1 = int1 + int2;
+
+  int1 = int1 + (int2 + 1);
+
+  int1 + int2;
+  // int1 + float1;
+  // int1 + char1;
+  // int1 + cstring1;
+  // int1 + string1;
+
+  int1 - int2;
+  // int1 - float1;
+  // int1 - char1;
+  // int1 - cstring1;
+  // int1 - string1;
+
+  int1 *int2;
+  // int1 *float1;
+  // int1 *char1;
+  // int1 *cstring1;
+  // int1 *string1;
+
+  int newvariable = 1;
+
+  int1 / int2;
+  // int1 / float1;
+  // int1 / char1;
+  // int1 / cstring1;
+  // int1 / string1;
+
+  int1 = int2;
+  // int1 = float1;
+  // int1 = char1;
+  // int1 = cstring1;
+  // int1 = string1;
+
+  int1 > int2;
+  // int1 > float1;
+  // int1 > char1;
+  // int1 > cstring1;
+  // int1 > string1;
+
+  int1 < int2;
+  // int1 < float1;
+  // int1 < char1;
+  // int1 < cstring1;
+  // int1 < string1;
+
+  array[int1];
+  // array[float1];
+  // array[char1];
+  // array[cstring1];
+  // array[string1];
+
+  array[11];
 }
