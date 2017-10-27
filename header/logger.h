@@ -16,7 +16,7 @@ typedef enum ErrorTypes {
 } ErrorTypes;
 
 void log_init_global();
-void log_assert(bool val, char *name);
+void log_assert(bool val, char* filename, int lineno);
 void log_error(ErrorTypes errortype, const char *format, ...);
 void log_lex_error(char* filename, int lineno, char* message, char* token);
 void log_syn_error(char* filename, int lineno, char* message, char* token);

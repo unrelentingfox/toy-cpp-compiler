@@ -24,11 +24,7 @@ int sem_init_global() {
  * @param      treenode  The treenode
  */
 void sem_populate(TreeNode *treenode) {
-  int i;
-  if (treenode == NULL) {
-    //printf("tree empty!\n");
-    return;
-  }
+  log_assert(treenode, __FILE__, __LINE__);
   switch (treenode->label) {
     case statement_seq-1:
     case declaration_seq-1:
@@ -56,13 +52,16 @@ void sem_populate(TreeNode *treenode) {
                       "symbol has not been declared in this scope",
                       treenode->token->text);
 
-    default:
+    default: {
+      int i;
       for (i = 0; i < treenode->cnum; i++)
         sem_populate(treenode->children[i]);
+    }
   }
 }
 
 void sem_populate_class_definition(TreeNode *treenode, Type *type) {
+  log_assert(treenode, __FILE__, __LINE__);
   switch (treenode->label) {
     case class_specifier:
       sem_populate_class_definition(treenode->children[0], type);
@@ -136,6 +135,7 @@ void sem_populate_class_definition(TreeNode *treenode, Type *type) {
  */
 void sem_populate_function_definition(TreeNode *treenode, Type *type) {
   //printf("POPULATE FUNCTION DEF\n");
+  log_assert(treenode, __FILE__, __LINE__);
   switch (treenode->label) {
     case function_definition-1:
       type = sem_get_type_from_token(treenode->children[0]);
@@ -215,10 +215,6 @@ void sem_populate_function_definition(TreeNode *treenode, Type *type) {
   }
 }
 
-void sem_populate_function(TreeNode *treenode, Type *type) {
-
-}
-
 /**
  * @brief      Specialized tree traversal used to populate the parameters of a
  *             function type inside a function declaration
@@ -228,9 +224,8 @@ void sem_populate_function(TreeNode *treenode, Type *type) {
  */
 void sem_populate_parameter_declaration(TreeNode *treenode, Type *functype) {
   //printf("PARAM_DELC\n");
-  if (functype->basetype != FUNCTION_T) {
+  if (!treenode || functype->basetype != FUNCTION_T)
     return;
-  }
   switch (treenode->label) {
     case parameter_declaration_list:
       sem_populate_parameter_declaration(treenode->children[0], functype);
@@ -257,9 +252,9 @@ void sem_populate_parameter_declaration(TreeNode *treenode, Type *functype) {
  */
 int sem_populate_parameter_definition(TreeNode *treenode, Type *functype, int paramcount) {
   //printf("PARAM_DEFI\n");
-  if (functype->basetype != FUNCTION_T) {
+  log_assert(treenode, __FILE__, __LINE__);
+  if (functype->basetype != FUNCTION_T)
     return paramcount;
-  }
   switch (treenode->label) {
     case parameter_declaration_list:
       paramcount = sem_populate_parameter_definition(treenode->children[0], functype, paramcount);
@@ -323,6 +318,7 @@ int sem_populate_parameter_definition(TreeNode *treenode, Type *functype, int pa
  * @param      type      The type
  */
 void sem_populate_declarators(TreeNode *treenode, Type *type) {
+  log_assert(treenode, __FILE__, __LINE__);
   switch (treenode->label) {
     case init_declarator_list:
       sem_populate_declarators(treenode->children[0], type);
@@ -380,8 +376,8 @@ void sem_populate_declarators(TreeNode *treenode, Type *type) {
  * @return     { description_of_the_return_value }
  */
 Type *sem_get_type_from_token(TreeNode *treenode) {
-  log_assert(treenode, "treenode");
-  log_assert(treenode->token, "treenode->token");
+  log_assert(treenode, __FILE__, __LINE__);
+  log_assert(treenode->token, __FILE__, __LINE__);
   Type *type;
   // check if class exists and return an instance of that type if it does
   if (treenode->label == CLASS_NAME || treenode->label == IDENTIFIER) {
@@ -412,7 +408,7 @@ Token *sem_get_leaf(TreeNode *treenode) {
   if (treenode->token)
     return treenode->token;
   else {
-    log_assert(treenode->children[0], "treenode->children[0]");
+    log_assert(treenode->children[0], __FILE__, __LINE__);
     return sem_get_leaf(treenode->children[0]);
   }
   return NULL;

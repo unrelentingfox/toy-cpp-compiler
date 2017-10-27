@@ -9,11 +9,11 @@ void log_init_global() {
   int log_first_error = NO_ERROR;
 }
 
-void log_assert(bool val, char *name) {
+void log_assert(bool val, char* filename, int lineno) {
   if (val) {
     return;
   } else {
-    fprintf(stderr, "ERROR: Unexpected NULL value for variable: \"%s\".", name);
+    fprintf(stderr, "120++ INTERNAL ERROR: In file (%s) line number (%d) unexpected NULL value.\n", filename, lineno);
     exit(INTERNAL_ERROR);
   }
 }
@@ -30,11 +30,11 @@ void log_error(ErrorTypes errortype, const char *format, ...) {
 
 void log_lex_error(char *filename, int lineno, char *message, char *token) {
   va_list args;
-  log_error(LEX_ERROR, "LEXICAL ERROR: In file (%s) line number (%d) %s, Token: \"%s\"\n", filename, lineno, message, token);
+  log_error(LEX_ERROR, "LEXICAL ERROR: In file (%s) line number (%d) %s. Token: \"%s\"\n", filename, lineno, message, token);
 }
 
 void log_syn_error(char *filename, int lineno, char *message, char *token) {
-  log_error(SYN_ERROR, "SYNTAX ERROR: In file (%s) line number (%d) %s, Token: \"%s\"\n", filename, lineno, message, token);
+  log_error(SYN_ERROR, "SYNTAX ERROR: In file (%s) line number (%d) %s. Token: \"%s\"\n", filename, lineno, message, token);
 }
 
 void log_sup_error(char *filename, int lineno, char *message, char *token) {
