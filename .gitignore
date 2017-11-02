@@ -4,7 +4,7 @@
 *bison.h
 *flex.c
 test/*
-*worksheet.c
+*worksheet*
 bin/*
 test/*
 example.c

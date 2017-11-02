@@ -60,7 +60,7 @@ int tree_print(TreeNode *node, int depth) {
       }
     }
   } else if (node) {
-    printf("%*s LEAF:\"%s\"\n", depth * 2, " ", node->token->text);
+    printf("%*s LEAF:\"%s\" %s\n", depth * 2, " ", node->token->text, humanReadable(node->label));
   }
 
 }

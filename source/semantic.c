@@ -24,7 +24,7 @@ int sem_init_global() {
  * @param      treenode  The treenode
  */
 void sem_populate(TreeNode *treenode) {
-  log_assert(treenode, __FILE__, __LINE__);
+  LOG_ASSERT(treenode);
   switch (treenode->label) {
     case statement_seq-1:
     case declaration_seq-1:
@@ -45,13 +45,14 @@ void sem_populate(TreeNode *treenode) {
         sem_populate_declarators(treenode->children[1],
                                  sem_get_type_from_token(treenode->children[0]));
       break;
-    case IDENTIFIER:
+    case IDENTIFIER: {
       if (!symtab_lookup(sem_current, treenode->token->text))
         log_sem_error(treenode->token->filename,
                       treenode->token->lineno,
                       "symbol has not been declared in this scope",
                       treenode->token->text);
-
+    }
+    break;
     default: {
       int i;
       for (i = 0; i < treenode->cnum; i++)
@@ -61,7 +62,7 @@ void sem_populate(TreeNode *treenode) {
 }
 
 void sem_populate_class_definition(TreeNode *treenode, Type *type) {
-  log_assert(treenode, __FILE__, __LINE__);
+  LOG_ASSERT(treenode);
   switch (treenode->label) {
     case class_specifier:
       sem_populate_class_definition(treenode->children[0], type);
@@ -135,7 +136,7 @@ void sem_populate_class_definition(TreeNode *treenode, Type *type) {
  */
 void sem_populate_function_definition(TreeNode *treenode, Type *type) {
   //printf("POPULATE FUNCTION DEF\n");
-  log_assert(treenode, __FILE__, __LINE__);
+  LOG_ASSERT(treenode);
   switch (treenode->label) {
     case function_definition-1:
       type = sem_get_type_from_token(treenode->children[0]);
@@ -252,7 +253,7 @@ void sem_populate_parameter_declaration(TreeNode *treenode, Type *functype) {
  */
 int sem_populate_parameter_definition(TreeNode *treenode, Type *functype, int paramcount) {
   //printf("PARAM_DEFI\n");
-  log_assert(treenode, __FILE__, __LINE__);
+  LOG_ASSERT(treenode);
   if (functype->basetype != FUNCTION_T)
     return paramcount;
   switch (treenode->label) {
@@ -318,26 +319,30 @@ int sem_populate_parameter_definition(TreeNode *treenode, Type *functype, int pa
  * @param      type      The type
  */
 void sem_populate_declarators(TreeNode *treenode, Type *type) {
-  log_assert(treenode, __FILE__, __LINE__);
+  LOG_ASSERT(treenode);
   switch (treenode->label) {
-    case init_declarator_list:
+    case init_declarator_list: {
       sem_populate_declarators(treenode->children[0], type);
       sem_populate_declarators(treenode->children[1], type);
-      break;
-    case init_declarator:
+    }
+    break;
+    case init_declarator: {
       sem_populate_declarators(treenode->children[0], type);
-      break;
-    case IDENTIFIER:
+    }
+    break;
+    case IDENTIFIER: {
       if ((symtab_insert(sem_current, treenode->token->text, type)) == SYM_REDECLARED) {
         log_sem_error(treenode->token->filename,
                       treenode->token->lineno,
                       "symbol was already declared",
                       treenode->token->text);
       }
-      break;
-    case declarator: /* it is a pointer and a direct_declarator */
+    }
+    break;
+    case declarator: { /* it is a pointer and a direct_declarator */
       sem_populate_declarators(treenode->children[1], type);
-      break;
+    }
+    break;
     case direct_declarator-1: {   /* direct_declarator '(' parameter_declaration_clause ')' */
 //    case direct_declarator-2:   /* CLASS_NAME '(' parameter_declaration_clause ')' */
 //    case direct_declarator-3:   /* CLASS_NAME COLONCOLON declarator_id '(' parameter_declaration_clause ')' */
@@ -365,19 +370,120 @@ void sem_populate_declarators(TreeNode *treenode, Type *type) {
   }
 }
 
+void sem_typecheck(TreeNode *treenode) {
+  LOG_ASSERT(treenode);
+  switch (treenode->label) {
+    case statement_seq-1:
+    case statement_seq-2:
+      sem_typecheck_(treenode);
+    default: {
+      int i;
+      for (i = 0; i < treenode->cnum; i++)
+        sem_typecheck(treenode->children[i]);
+    }
+  }
+}
+
+static Type *sem_typecheck_(TreeNode *treenode) {
+  LOG_ASSERT(treenode);
+  switch (treenode->label) {
+    case statement_seq-1:
+    case statement_seq-2: {
+      LOG_ASSERT(treenode->children[0]);
+      LOG_ASSERT(treenode->children[1]);
+      sem_typecheck_(treenode->children[0]);
+      sem_typecheck_(treenode->children[1]);
+    }
+    break;
+    case expression_statement: {
+      LOG_ASSERT(treenode->children[0]);
+      return sem_typecheck_(treenode->children[0]);
+    }
+    break;
+    case additive_expression:
+    case multiplicative_expression:
+    case assignment_expression:
+    case relational_expression: {
+      LOG_ASSERT(treenode->children[0]);
+      LOG_ASSERT(treenode->children[2]);
+      Type *type = sem_typecheck_(treenode->children[0]);
+      if (type != sem_typecheck_(treenode->children[2])) {
+        sem_error_from_token("types don't match", sem_get_leaf(treenode->children[0]));
+        return type_get_basetype(UNKNOWN_T);
+      } else {
+        return type;
+      }
+    }
+    break;
+    case postfix_expression: {
+      LOG_ASSERT(treenode->children[0]);
+      LOG_ASSERT(treenode->children[0]->token);
+      LOG_ASSERT(treenode->children[0]->token->text);
+      LOG_ASSERT(treenode->children[2]);
+      if (sem_typecheck_(treenode->children[2]) != type_from_terminal(INT))
+        sem_error_from_token("array subscript is not an integer", sem_get_leaf(treenode->children[2]));
+      return symtab_lookup(sem_current, treenode->children[0]->token->text)->type;
+    }
+    break;
+    case primary_expression: {
+      LOG_ASSERT(treenode->children[1]);
+      return sem_typecheck_(treenode->children[1]);
+    }
+    break;
+    case IDENTIFIER:
+    case CLASS_NAME: {
+      LOG_ASSERT(treenode->token);
+      LOG_ASSERT(treenode->token->text);
+      SymtabNode *node = symtab_lookup(sem_current, treenode->token->text);
+      if (!node) {
+        sem_error_from_token("symbol has not been declared in this scope", treenode->token);
+        return type_get_basetype(UNKNOWN_T);
+      } else {
+        return node->type;
+      }
+    }
+    break;
+    case INTEGER: {
+      return type_get_basetype(INT_T);
+    }
+    break;
+    case CHARACTER: {
+      return type_get_basetype(CHAR_T);
+    }
+    break;
+    case FLOATING: {
+      return type_get_basetype(FLOAT_T);
+    }
+    break;
+    case STRING: {
+      // TODO: implement strings
+      return type_get_basetype(UNKNOWN_T);
+    }
+    break;
+    case TRUE:
+    case FALSE: {
+      return type_get_basetype(INT_T);
+    }
+    break;
+    default:
+      return type_get_basetype(UNKNOWN_T);
+  }
+}
+
+
 /**
  * @brief      Attempt to get a type from a token. If the type looks like a
  *             class, lookup that class. If the class exists, return an instance
  *             of it. If the class does not exist, throw an error and return
- *             UNKNOWN_TYPE.
+ *             UNKNOWN_T.
  *
  * @param      treenode  The treenode
  *
  * @return     { description_of_the_return_value }
  */
 Type *sem_get_type_from_token(TreeNode *treenode) {
-  log_assert(treenode, __FILE__, __LINE__);
-  log_assert(treenode->token, __FILE__, __LINE__);
+  LOG_ASSERT(treenode);
+  LOG_ASSERT(treenode->token);
   Type *type;
   // check if class exists and return an instance of that type if it does
   if (treenode->label == CLASS_NAME || treenode->label == IDENTIFIER) {
@@ -389,6 +495,7 @@ Type *sem_get_type_from_token(TreeNode *treenode) {
                     treenode->token->lineno,
                     "symbol has not been declared in this scope",
                     treenode->token->text);
+      return type_get_basetype(UNKNOWN_T);
     }
   }
   // if it wasn't a class then get basetype.
@@ -408,8 +515,15 @@ Token *sem_get_leaf(TreeNode *treenode) {
   if (treenode->token)
     return treenode->token;
   else {
-    log_assert(treenode->children[0], __FILE__, __LINE__);
+    LOG_ASSERT(treenode->children[0]);
     return sem_get_leaf(treenode->children[0]);
   }
   return NULL;
+}
+
+void sem_error_from_token(char *message, Token *token) {
+  log_sem_error(token->filename,
+                token->lineno,
+                message,
+                token->text);
 }

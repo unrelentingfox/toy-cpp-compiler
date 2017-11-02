@@ -1,5 +1,10 @@
 #ifndef LOGGER_H
 #define LOGGER_H
+#define LOG_ASSERT(val) \
+  if (!val) { \
+    fprintf(stderr, "120++ INTERNAL ERROR: In file (%s) line number (%d) assertion failed.\n", __FILE__, __LINE__); \
+    exit(INTERNAL_ERROR); \
+  }
 
 #include <stdbool.h>
 
@@ -16,12 +21,12 @@ typedef enum ErrorTypes {
 } ErrorTypes;
 
 void log_init_global();
-void log_assert(bool val, char* filename, int lineno);
+
 void log_error(ErrorTypes errortype, const char *format, ...);
-void log_lex_error(char* filename, int lineno, char* message, char* token);
-void log_syn_error(char* filename, int lineno, char* message, char* token);
-void log_sem_error(char* filename, int lineno, char* message, char* token);
-void log_sup_error(char* filename, int lineno, char* message, char* token);
+void log_lex_error(char *filename, int lineno, char *message, char *token);
+void log_syn_error(char *filename, int lineno, char *message, char *token);
+void log_sem_error(char *filename, int lineno, char *message, char *token);
+void log_sup_error(char *filename, int lineno, char *message, char *token);
 void log_final_status();
 
 #endif

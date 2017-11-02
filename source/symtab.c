@@ -31,8 +31,8 @@ Symtab *symtab_new_table(Symtab *parent) {
 }
 
 SymtabNode *symtab_new_node(char *key, Type *type) {
-  log_assert(key, __FILE__, __LINE__);
-  log_assert(type, __FILE__, __LINE__);
+  LOG_ASSERT(key);
+  LOG_ASSERT(type);
   SymtabNode *node = (SymtabNode *)malloc(sizeof(SymtabNode));
   node->key = strdup(key);
   node->type = type;
@@ -43,8 +43,8 @@ SymtabNode *symtab_new_node(char *key, Type *type) {
 // insert a symbol into a table
 // return values correlate with symtabErrors enum
 int symtab_insert(Symtab *table, char *key, Type *type) {
-  log_assert(table, __FILE__, __LINE__);
-  log_assert(key, __FILE__, __LINE__);
+  LOG_ASSERT(table);
+  LOG_ASSERT(key);
 
   //check for redeclaration
   if (symtab_lookup(table, key))
@@ -76,8 +76,8 @@ int symtab_insert(Symtab *table, char *key, Type *type) {
 // lookup a symbol in a scope and its parent scopes
 // returns NULL if symbol does not exist
 SymtabNode *symtab_lookup(Symtab *table, char *key) {
-  log_assert(table, __FILE__, __LINE__);
-  log_assert(key, __FILE__, __LINE__);
+  LOG_ASSERT(table);
+  LOG_ASSERT(key);
   int hash = symtab_hash(key) % TABLE_SIZE;
   //printf("hash: %d\n", hash);
 
@@ -95,8 +95,8 @@ SymtabNode *symtab_lookup(Symtab *table, char *key) {
 }
 
 SymtabNode *symtab_search_bucket(SymtabNode *node, char *key) {
-  log_assert(node, __FILE__, __LINE__);
-  log_assert(key, __FILE__, __LINE__);
+  LOG_ASSERT(node);
+  LOG_ASSERT(key);
   int firstLoop = true;
   do {
     if (!firstLoop)
@@ -122,7 +122,7 @@ int symtab_hash(char *key) {
 }
 
 void symtab_print_table(Symtab *table, int indent) {
-  log_assert(table, __FILE__, __LINE__);
+  LOG_ASSERT(table);
   for (int i = 0; i < TABLE_SIZE; i++) {
     if (table->buckets[i]) {
       for (int j = 0; j < indent; j++) {

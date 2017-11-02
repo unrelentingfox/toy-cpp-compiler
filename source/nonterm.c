@@ -1,13 +1,12 @@
 #include "../header/nonterm.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "../header/bison.h"
 
-char *humanReadable(int nonterm) {
+char *humanReadable(int label) {
 
-  switch (nonterm) {
-    // case 0:
-    //   return strdup("Terminal");
-    //   break;
+  switch (label) {
+    /*********** NON TERMINAL SYMBOLS ***********/
     case typedef_name:
       return strdup("typedef_name");
       break;
@@ -536,9 +535,375 @@ char *humanReadable(int nonterm) {
     case type_id_list_opt:
       return strdup("type_id_list_opt");
       break;
+    case CLASS_NAME:
+      return strdup("CLASS_NAME");
+      break;
+    case ENUM_NAME:
+      return strdup("ENUM_NAME");
+      break;
+    case IDENTIFIER:
+      return strdup("IDENTIFIER");
+      break;
+    case NAMESPACE_NAME:
+      return strdup("NAMESPACE_NAME");
+      break;
+    case TEMPLATE_NAME:
+      return strdup("TEMPLATE_NAME");
+      break;
+    case TYPEDEF_NAME:
+      return strdup("TYPEDEF_NAME");
+      break;
+    case '{':
+      return strdup("'{'");
+      break;
+    case '}':
+      return strdup("'}'");
+      break;
+    case '[':
+      return strdup("'['");
+      break;
+    case ']':
+      return strdup("']'");
+      break;
+    case '(':
+      return strdup("'('");
+      break;
+    case ')':
+      return strdup("')'");
+      break;
+    case ';':
+      return strdup("';'");
+      break;
+    case ':':
+      return strdup("':'");
+      break;
+    case ELLIPSIS:
+      return strdup("ELLIPSIS");
+      break;
+    case '?':
+      return strdup("'?'");
+      break;
+    case COLONCOLON:
+      return strdup("COLONCOLON");
+      break;
+    case '.':
+      return strdup("'.'");
+      break;
+    case DOTSTAR:
+      return strdup("DOTSTAR");
+      break;
+    case '+':
+      return strdup("'+'");
+      break;
+    case '-':
+      return strdup("'-'");
+      break;
+    case '*':
+      return strdup("'*'");
+      break;
+    case '/':
+      return strdup("'/'");
+      break;
+    case '%':
+      return strdup("'%'");
+      break;
+    case '^':
+      return strdup("'^'");
+      break;
+    case '&':
+      return strdup("'&'");
+      break;
+    case '|':
+      return strdup("'|'");
+      break;
+    case '~':
+      return strdup("'~'");
+      break;
+    case '!':
+      return strdup("'!'");
+      break;
+    case '=':
+      return strdup("'='");
+      break;
+    case '<':
+      return strdup("'<'");
+      break;
+    case '>':
+      return strdup("'>'");
+      break;
+    case ADDEQ:
+      return strdup("ADDEQ");
+      break;
+    case SUBEQ:
+      return strdup("SUBEQ");
+      break;
+    case MULEQ:
+      return strdup("MULEQ");
+      break;
+    case DIVEQ:
+      return strdup("DIVEQ");
+      break;
+    case MODEQ:
+      return strdup("MODEQ");
+      break;
+    case XOREQ:
+      return strdup("XOREQ");
+      break;
+    case ANDEQ:
+      return strdup("ANDEQ");
+      break;
+    case OREQ:
+      return strdup("OREQ");
+      break;
+    case SL:
+      return strdup("SL");
+      break;
+    case SR:
+      return strdup("SR");
+      break;
+    case SLEQ:
+      return strdup("SLEQ");
+      break;
+    case SREQ:
+      return strdup("SREQ");
+      break;
+    case EQ:
+      return strdup("EQ");
+      break;
+    case NOTEQ:
+      return strdup("NOTEQ");
+      break;
+    case LTEQ:
+      return strdup("LTEQ");
+      break;
+    case GTEQ:
+      return strdup("GTEQ");
+      break;
+    case ANDAND:
+      return strdup("ANDAND");
+      break;
+    case OROR:
+      return strdup("OROR");
+      break;
+    case PLUSPLUS:
+      return strdup("PLUSPLUS");
+      break;
+    case MINUSMINUS:
+      return strdup("MINUSMINUS");
+      break;
+    case ',':
+      return strdup("','");
+      break;
+    case ARROWSTAR:
+      return strdup("ARROWSTAR");
+      break;
+    case ARROW:
+      return strdup("ARROW");
+      break;
+    case ASM:
+      return strdup("ASM");
+      break;
+    case AUTO:
+      return strdup("AUTO");
+      break;
+    case BOOL:
+      return strdup("BOOL");
+      break;
+    case BREAK:
+      return strdup("BREAK");
+      break;
+    case CASE:
+      return strdup("CASE");
+      break;
+    case CATCH:
+      return strdup("CATCH");
+      break;
+    case CHAR:
+      return strdup("CHAR");
+      break;
+    case CLASS:
+      return strdup("CLASS");
+      break;
+    case CONST:
+      return strdup("CONST");
+      break;
+    case CONST_CAST:
+      return strdup("CONST_CAST");
+      break;
+    case CONTINUE:
+      return strdup("CONTINUE");
+      break;
+    case DEFAULT:
+      return strdup("DEFAULT");
+      break;
+    case DELETE:
+      return strdup("DELETE");
+      break;
+    case DO:
+      return strdup("DO");
+      break;
+    case DOUBLE:
+      return strdup("DOUBLE");
+      break;
+    case DYNAMIC_CAST:
+      return strdup("DYNAMIC_CAST");
+      break;
+    case ELSE:
+      return strdup("ELSE");
+      break;
+    case ENUM:
+      return strdup("ENUM");
+      break;
+    case EXPLICIT:
+      return strdup("EXPLICIT");
+      break;
+    case EXPORT:
+      return strdup("EXPORT");
+      break;
+    case EXTERN:
+      return strdup("EXTERN");
+      break;
+    case FALSE:
+      return strdup("FALSE");
+      break;
+    case FLOAT:
+      return strdup("FLOAT");
+      break;
+    case FOR:
+      return strdup("FOR");
+      break;
+    case FRIEND:
+      return strdup("FRIEND");
+      break;
+    case GOTO:
+      return strdup("GOTO");
+      break;
+    case IF:
+      return strdup("IF");
+      break;
+    case INLINE:
+      return strdup("INLINE");
+      break;
+    case INT:
+      return strdup("INT");
+      break;
+    case LONG:
+      return strdup("LONG");
+      break;
+    case MUTABLE:
+      return strdup("MUTABLE");
+      break;
+    case NAMESPACE:
+      return strdup("NAMESPACE");
+      break;
+    case NEW:
+      return strdup("NEW");
+      break;
+    case OPERATOR:
+      return strdup("OPERATOR");
+      break;
+    case PRIVATE:
+      return strdup("PRIVATE");
+      break;
+    case PROTECTED:
+      return strdup("PROTECTED");
+      break;
+    case PUBLIC:
+      return strdup("PUBLIC");
+      break;
+    case REGISTER:
+      return strdup("REGISTER");
+      break;
+    case REINTERPRET_CAST:
+      return strdup("REINTERPRET_CAST");
+      break;
+    case RETURN:
+      return strdup("RETURN");
+      break;
+    case SHORT:
+      return strdup("SHORT");
+      break;
+    case SIGNED:
+      return strdup("SIGNED");
+      break;
+    case SIZEOF:
+      return strdup("SIZEOF");
+      break;
+    case STATIC:
+      return strdup("STATIC");
+      break;
+    case STATIC_CAST:
+      return strdup("STATIC_CAST");
+      break;
+    case STRUCT:
+      return strdup("STRUCT");
+      break;
+    case SWITCH:
+      return strdup("SWITCH");
+      break;
+    case TEMPLATE:
+      return strdup("TEMPLATE");
+      break;
+    case THIS:
+      return strdup("THIS");
+      break;
+    case THROW:
+      return strdup("THROW");
+      break;
+    case TRUE:
+      return strdup("TRUE");
+      break;
+    case TRY:
+      return strdup("TRY");
+      break;
+    case TYPEDEF:
+      return strdup("TYPEDEF");
+      break;
+    case TYPEID:
+      return strdup("TYPEID");
+      break;
+    case TYPENAME:
+      return strdup("TYPENAME");
+      break;
+    case UNION:
+      return strdup("UNION");
+      break;
+    case UNSIGNED:
+      return strdup("UNSIGNED");
+      break;
+    case USING:
+      return strdup("USING");
+      break;
+    case VIRTUAL:
+      return strdup("VIRTUAL");
+      break;
+    case VOID:
+      return strdup("VOID");
+      break;
+    case VOLATILE:
+      return strdup("VOLATILE");
+      break;
+    case WCHAR_T:
+      return strdup("WCHAR_T");
+      break;
+    case WHILE:
+      return strdup("WHILE");
+      break;
+    case INTEGER:
+      return strdup("INTEGER");
+      break;
+    case FLOATING:
+      return strdup("FLOATING");
+      break;
+    case CHARACTER:
+      return strdup("CHARACTER");
+      break;
+    case STRING:
+      return strdup("STRING");
+      break;
     default: {
       char *temp = malloc(sizeof(char) * 16);
-      snprintf(temp, 16, "%d", nonterm);
+      snprintf(temp, 16, "%d", label);
       return temp;
     }
     break;

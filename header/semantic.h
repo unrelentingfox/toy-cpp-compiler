@@ -15,8 +15,11 @@ int sem_populate_parameter_definition(TreeNode *treenode, Type *functype, int pa
 void sem_populate_declarators(TreeNode *treenode, Type *type);
 
 /* Functions for typechecking */
-Type *sem_typecheck_expressions(TreeNode *treenode);
+void sem_typecheck(TreeNode *treenode);
+static Type *sem_typecheck_(TreeNode *treenode);
 
 /* Other helper functions */
 Type *sem_get_type_from_token(TreeNode *treenode);
+Token *sem_get_leaf(TreeNode *treenode);
+void sem_error_from_token(char *message, Token *token);
 #endif

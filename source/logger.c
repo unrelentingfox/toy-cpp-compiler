@@ -9,15 +9,6 @@ void log_init_global() {
   int log_first_error = NO_ERROR;
 }
 
-void log_assert(bool val, char* filename, int lineno) {
-  if (val) {
-    return;
-  } else {
-    fprintf(stderr, "120++ INTERNAL ERROR: In file (%s) line number (%d) unexpected NULL value.\n", filename, lineno);
-    exit(INTERNAL_ERROR);
-  }
-}
-
 void log_error(ErrorTypes errortype, const char *format, ...) {
   va_list args;
   va_start(args, format);
@@ -48,3 +39,5 @@ void log_sem_error(char *filename, int lineno, char *message, char *token) {
 void log_final_status() {
   fprintf(stderr, "TOTAL ERRORS: %d\n", log_total_errors);
 }
+
+// TODO: create a helper function for better type checking error message

@@ -9,6 +9,9 @@ static void type_initialize_basetypes() {
   if (!BASETYPES_INITIALIZED) {
     Type *temp;
     temp = (Type *)malloc(sizeof(Type));
+    temp->basetype = VOID_T;
+    void_t = temp;
+    temp = (Type *)malloc(sizeof(Type));
     temp->basetype = INT_T;
     int_t = temp;
     temp = (Type *)malloc(sizeof(Type));
@@ -40,13 +43,53 @@ static void type_initialize_basetypes() {
 }
 
 /**
+ * @brief      Get a basetype by name
+ *
+ * @param[in]  basetype  The basetype
+ *
+ * @return     { description_of_the_return_value }
+ */
+Type *type_get_basetype(enum BaseType basetype) {
+  switch (basetype) {
+    case VOID_T:
+      return void_t;
+      break;
+    case INT_T:
+      return int_t;
+      break;
+    case SHORT_T:
+      return short_t;
+      break;
+    case LONG_T:
+      return long_t;
+      break;
+    case FLOAT_T:
+      return float_t;
+      break;
+    case DOUBLE_T:
+      return double_t;
+      break;
+    case CHAR_T:
+      return char_t;
+      break;
+    case UNSIGNED_T:
+      return unsigned_t;
+      break;
+    case UNKNOWN_T:
+    default:
+      return unknown_t;
+      break;
+  }
+}
+
+/**
  * @brief      Returns a type that corrilates with the yytokentype that is
  *             passed in. Only basetypes should be passed in. Arrays, Classes,
  *             and Functions should be created using the proper helper function.
  *
  * @param[in]  terminal  The yytokentype of the terminal
  *
- * @return     Returns a pointer to one of the basetypes.
+ * @return   Returns a pointer to one of the basetypes.
  */
 Type *type_from_terminal(enum yytokentype terminal) {
   if (!BASETYPES_INITIALIZED)

@@ -86,18 +86,17 @@ struct Type *short_t;
 struct Type *long_t;
 struct Type *float_t;
 struct Type *double_t;
-struct Type *long_double_t;
 struct Type *char_t;
 struct Type *unsigned_t;
 struct Type *unknown_t;
 
 static int BASETYPES_INITIALIZED;
 static void type_initialize_basetypes();
-
+Type *type_get_basetype();
 struct Type *type_from_terminal(enum yytokentype terminal);
 struct Type *type_new(BaseType basetype);
 Type *type_new_function(Type *returntype);
-Type *type_new_class(char* name);
+Type *type_new_class(char *name);
 Type *type_new_class_instance(Type *classtype);
 Type *type_new_array(Type *type, int size);
 struct Parameter *type_new_parameter(Type *type);
