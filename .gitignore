@@ -6,7 +6,7 @@
 test/*
 *worksheet*
 bin/*
-test/*
+*test*
 example.c
 output.txt
 a.out
