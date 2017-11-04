@@ -237,7 +237,7 @@ sup_error(char *message);
 %type < treenode > statement_seq_opt
 %type < treenode > condition_opt
 %type < treenode > enumerator_list_opt
-%type < treenode > initializer_opt
+//%type < treenode > initializer_opt
 %type < treenode > constant_expression_opt
 %type < treenode > abstract_declarator_opt
 %type < treenode > type_specifier_seq_opt
@@ -1037,7 +1037,8 @@ init_declarator_list:
 
 
 init_declarator:
-     declarator initializer_opt           { $$ = tree_new(init_declarator, 2, $1, $2); }
+     declarator                          { $$ = tree_new(init_declarator-1, 1, $1); }
+   | declarator initializer              { $$ = tree_new(init_declarator-2, 2, $1, $2); }
    ;
 
 
@@ -1556,10 +1557,10 @@ enumerator_list_opt:
    ;
 
 
-initializer_opt:
-     /* epsilon */          { $$ = NULL; }
-   | initializer           { $$ = tree_new(initializer_opt, 1, $1); }
-   ;
+//initializer_opt:
+//     /* epsilon */          { $$ = NULL; }
+//   | initializer           { $$ = tree_new(initializer_opt, 1, $1); }
+//   ;
 
 
 constant_expression_opt:

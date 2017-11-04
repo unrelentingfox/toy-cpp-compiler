@@ -278,8 +278,11 @@ char *humanReadable(int label) {
     case init_declarator_list:
       return strdup("init_declarator_list");
       break;
-    case init_declarator:
-      return strdup("init_declarator");
+    case init_declarator-1:
+      return strdup("init_declarator-1");
+      break;
+    case init_declarator-2:
+      return strdup("init_declarator-2");
       break;
     case declarator:
       return strdup("declarator");

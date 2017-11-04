@@ -328,7 +328,8 @@ void sem_populate_declarators(TreeNode *treenode, Type *type) {
       sem_populate_declarators(treenode->children[2], type);
     }
     break;
-    case init_declarator: {
+    case init_declarator-1:
+    case init_declarator-2: {
       sem_populate_declarators(treenode->children[0], type);
     }
     break;
@@ -430,7 +431,7 @@ Type *sem_typecheck(TreeNode *treenode) {
       sem_typecheck(treenode->children[2]);
     }
     break;
-    case init_declarator: {
+    case init_declarator-2: {
       LOG_ASSERT(treenode->children[0]);
       LOG_ASSERT(treenode->children[1]);
       Type *type1 = sem_typecheck(treenode->children[0]);
