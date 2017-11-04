@@ -1,5 +1,5 @@
 #include "../header/type.h"
-
+#include "../header/logger.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -78,6 +78,54 @@ Type *type_get_basetype(enum BaseType basetype) {
     case UNKNOWN_T:
     default:
       return unknown_t;
+      break;
+  }
+}
+
+char *type_to_string(Type *type) {
+  switch (type->basetype) {
+    case VOID_T:
+      return strdup("Void");
+      break;
+    case INT_T:
+      return strdup("Int");
+      break;
+    case SHORT_T:
+      return strdup("Short");
+      break;
+    case LONG_T:
+      return strdup("Long");
+      break;
+    case FLOAT_T:
+      return strdup("Float");
+      break;
+    case DOUBLE_T:
+      return strdup("Double");
+      break;
+    case CHAR_T:
+      return strdup("Char");
+      break;
+    case UNSIGNED_T:
+      return strdup("Unsigned");
+      break;
+    case CLASS_T:
+      return strdup("Class");;
+      break;
+    case CLASS_INSTANCE_T: {
+      LOG_ASSERT(type->info.classinstance.classtype);
+      LOG_ASSERT(type->info.classinstance.classtype->info.class.name);
+      return strdup(type->info.classinstance.classtype->info.class.name);
+    }
+    break;
+    case FUNCTION_T:
+      return strdup("Function");
+      break;
+    case ARRAY_T:
+      return strdup("Array");
+      break;
+    case UNKNOWN_T:
+    default:
+      return strdup("Unknown");
       break;
   }
 }
@@ -188,8 +236,8 @@ Type *type_new_array(Type *type, int size) {
     type_initialize_basetypes();
   Type *newtype = (Type *)malloc(sizeof(Type));
   newtype->basetype = ARRAY_T;
-  newtype->info.array.size = 0;
-  newtype->info.array.type = NULL;
+  newtype->info.array.size = size;
+  newtype->info.array.type = type;
   return newtype;
 }
 
@@ -204,6 +252,8 @@ TypeCompareResults type_compare(Type *type1, Type *type2) {
     type_initialize_basetypes();
   if (!type1 || !type2)
     return TYPE_NULL_PARAMETERS;
+  if (type1 == unknown_t || type2 == unknown_t)
+    return TYPE_NOT_EQUAL;
   else {
     switch (type1->basetype) {
       case CLASS_INSTANCE_T: {
@@ -217,8 +267,9 @@ TypeCompareResults type_compare(Type *type1, Type *type2) {
         if (type1->info.array.type == type2->info.array.type
             && type1->info.array.size == type2->info.array.size)
           return TYPE_EQUAL;
-        else
+        else {
           return TYPE_NOT_EQUAL;
+        }
       }
       break;
       default: {

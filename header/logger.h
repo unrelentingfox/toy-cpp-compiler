@@ -1,12 +1,13 @@
 #ifndef LOGGER_H
 #define LOGGER_H
+#include <stdio.h>
+#include <stdbool.h>
+
 #define LOG_ASSERT(val) \
   if (!val) { \
     fprintf(stderr, "120++ INTERNAL ERROR: In file (%s) line number (%d) assertion failed.\n", __FILE__, __LINE__); \
     exit(INTERNAL_ERROR); \
   }
-
-#include <stdbool.h>
 
 int log_total_errors;
 int log_first_error;
