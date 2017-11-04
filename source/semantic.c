@@ -407,8 +407,7 @@ Type *sem_typecheck(TreeNode *treenode) {
     break;
     case compound_statement: {
       LOG_ASSERT(treenode->children[1]);
-      if (treenode->children[1]->label == statement_seq - 2 ||
-          treenode->children[1]->label == statement_seq - 1)
+      if (treenode->children[1]->label != '}')
         return sem_typecheck(treenode->children[1]);
       else
         return type_get_basetype(UNKNOWN_T);
