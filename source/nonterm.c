@@ -176,8 +176,9 @@ char *humanReadable(int label) {
       return strdup("declaration_statement");
       break;
     case declaration_seq-1:
+      return strdup("declaration_seq-1");
     case declaration_seq-2:
-      return strdup("declaration_seq");
+      return strdup("declaration_seq-2");
       break;
     case declaration:
       return strdup("declaration");
@@ -185,8 +186,10 @@ char *humanReadable(int label) {
     case block_declaration:
       return strdup("block_declaration");
       break;
-    case simple_declaration:
-      return strdup("simple_declaration");
+    case simple_declaration-1:
+      return strdup("simple_declaration-1");
+    case simple_declaration-2:
+      return strdup("simple_declaration-2");
       break;
     case decl_specifier:
       return strdup("decl_specifier");
@@ -282,16 +285,34 @@ char *humanReadable(int label) {
       return strdup("declarator");
       break;
     case direct_declarator:
-    case direct_declarator-1:
-    case direct_declarator-2:
-    case direct_declarator-3:
-    case direct_declarator-4:
-    case direct_declarator-5:
-    case direct_declarator-6:
-    case direct_declarator-7:
-    case direct_declarator-8:
-    case direct_declarator-9:
       return strdup("direct_declarator");
+      break;
+    case direct_declarator-1:
+      return strdup("direct_declarator-1");
+      break;
+    case direct_declarator-2:
+      return strdup("direct_declarator-2");
+      break;
+    case direct_declarator-3:
+      return strdup("direct_declarator-3");
+      break;
+    case direct_declarator-4:
+      return strdup("direct_declarator-4");
+      break;
+    case direct_declarator-5:
+      return strdup("direct_declarator-5");
+      break;
+    case direct_declarator-6:
+      return strdup("direct_declarator-6");
+      break;
+    case direct_declarator-7:
+      return strdup("direct_declarator-7");
+      break;
+    case direct_declarator-8:
+      return strdup("direct_declarator-8");
+      break;
+    case direct_declarator-9:
+      return strdup("direct_declarator-9");
       break;
     case ptr_operator:
       return strdup("ptr_operator");
@@ -327,9 +348,13 @@ char *humanReadable(int label) {
       return strdup("parameter_declaration");
       break;
     case function_definition:
-    case function_definition-1:
-    case function_definition-2:
       return strdup("function_definition");
+      break;
+    case function_definition-1:
+      return strdup("function_definition-1");
+      break;
+    case function_definition-2:
+      return strdup("function_definition-2");
       break;
     case function_body:
       return strdup("function_body");
@@ -352,8 +377,10 @@ char *humanReadable(int label) {
     case class_key:
       return strdup("class_key");
       break;
-    case member_specification:
-      return strdup("member_specification");
+    case member_specification-1:
+      return strdup("member_specification-1");
+    case member_specification-2:
+      return strdup("member_specification-2");
       break;
     case member_declaration:
       return strdup("member_declaration");
