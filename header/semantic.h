@@ -16,6 +16,7 @@ void sem_populate_declarators(TreeNode *treenode, Type *type);
 
 /* Functions for typechecking */
 Type *sem_typecheck(TreeNode *treenode, Symtab *symtab);
+int sem_typecheck_function_params(TreeNode *treenode, Symtab *symtab, Type *functype, int param);
 
 /* Other helper functions */
 Type *sem_get_type_from_token(TreeNode *treenode);

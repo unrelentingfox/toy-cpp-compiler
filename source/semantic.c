@@ -374,7 +374,9 @@ void sem_populate_declarators(TreeNode *treenode, Type *type) {
 }
 
 Type *sem_typecheck(TreeNode *treenode, Symtab *symtab) {
-  LOG_ASSERT(treenode);
+  if (!treenode || !symtab) {
+    return type_get_basetype(UNKNOWN_T);
+  }
   switch (treenode->label) {
     case declaration_seq-1:
     case statement_seq-1: {
@@ -504,10 +506,21 @@ Type *sem_typecheck(TreeNode *treenode, Symtab *symtab) {
     }
     break;
     case postfix_expression-3: { // Function call with params
-      return type_get_basetype(UNKNOWN_T);
-      // get function scope
-      // check that param types match
-      // return function returntype
+      LOG_ASSERT(treenode->children[0]);
+      LOG_ASSERT(treenode->children[0]->token);
+      LOG_ASSERT(treenode->children[0]->token->text);
+      LOG_ASSERT(treenode->children[2]);
+      // get the function type
+      SymtabNode *node = symtab_lookup(symtab, treenode->children[0]->token->text);
+      if (node->type && node->type->basetype == FUNCTION_T) { // make sure the function exists
+        int nparams = sem_typecheck_function_params(treenode->children[2], symtab, node->type, 0);
+        if (nparams != node->type->info.function.nparams) // check if there were enough parameters
+          sem_error_from_token("not enough parameters for function call", treenode->children[0]->token);
+        return node->type->info.function.returntype;
+      } else {
+        sem_error_from_token("function does not exist", treenode->children[0]->token);
+        return type_get_basetype(UNKNOWN_T);
+      }
     }
     break;
     case postfix_expression-4: { // .::IDENTIFIER
@@ -596,6 +609,52 @@ Type *sem_typecheck(TreeNode *treenode, Symtab *symtab) {
   }
 }
 
+/**
+ * @brief      Helper function to typecheck function parameters and number of
+ *             parameters. Implemented as a post-order traversal.
+ *
+ * @param      treenode  A treenode that points to either an expression_list or
+ *                       a single parameter
+ * @param      functype  A type pointer that points to the function being called
+ * @param[in]  param     The index of the current parameter being checked
+ *                       (should start at 0 when this function is called)
+ *
+ * @return     Returns the number of parameters that the function call had. returns -1 if there was an error.
+ */
+int sem_typecheck_function_params(TreeNode *treenode, Symtab *symtab, Type *functype, int param) {
+  if (!treenode || !functype) {
+    return -1;
+  }
+  switch (treenode->label) {
+    case expression_list: { // Iterate through the parameters
+      LOG_ASSERT(treenode->children[0]);
+      LOG_ASSERT(treenode->children[2]);
+      param = sem_typecheck_function_params(treenode->children[0], symtab, functype, param);
+      if (param == -1) // don't do anything more if there was an error
+        return -1;
+      sem_typecheck_function_params(treenode->children[2], symtab, functype, param);
+    }
+    break;
+    default: {
+      if (param < functype->info.function.nparams) { // make sure there aren't too many parameters
+        LOG_ASSERT(functype->info.function.parameters);
+        LOG_ASSERT(functype->info.function.parameters[param]);
+        LOG_ASSERT(functype->info.function.parameters[param]->type);
+        Type *type1 = functype->info.function.parameters[param]->type;
+        Type *type2 = sem_typecheck(treenode, symtab);  // get the type of the parameter
+        if (type_compare(type1, type2) != TYPE_EQUAL) {
+          sem_type_error("parameter does not match function definition", sem_get_leaf(treenode), type1, type2);
+          return -1;
+        }
+      } else {
+        sem_error_from_token("too many parameters for function call", sem_get_leaf(treenode));
+        return -1;
+      }
+      return ++param;
+    }
+    break;
+  }
+}
 
 /**
  * @brief      Attempt to get a type from a token. If the type looks like a
@@ -664,7 +723,7 @@ void sem_error_from_token(char *message, Token *token) {
 
 void sem_type_error(char *message, Token *token, Type *type1, Type *type2) {
   log_error(
-    SEM_ERROR, "SEMANTIC ERROR:%s:%d: Near the token '%s' %s (types: %s and %s) \n",
+    SEM_ERROR, "SEMANTIC ERROR:%s:%d: Near the token '%s' %s (types: %s != %s) \n",
     token->filename,
     token->lineno,
     token->text,
