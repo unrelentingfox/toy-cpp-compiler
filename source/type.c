@@ -83,6 +83,9 @@ Type *type_get_basetype(enum BaseType basetype) {
 }
 
 char *type_to_string(Type *type) {
+  if (!type) {
+    return strdup("(NULL)");
+  }
   switch (type->basetype) {
     case VOID_T:
       return strdup("Void");

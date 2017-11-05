@@ -25,16 +25,24 @@ int main(int argc, char **argv) {
         // Lexical and Syntax analysis
         yyparse();
         // Semantic analysis
-        sem_init_global();
-        sem_populate(astRoot);
-        sem_typecheck(astRoot);
+        if (!log_first_error) {
+          sem_init_global();
+          sem_populate(astRoot);
+        }
+        // Type checking
+        if (!log_first_error) {
+          sem_typecheck(astRoot, sem_global);
+        }
         log_final_status();
         fclose(yyin);
         // debug
-        // printf("\nVisual Representation of hashtable:\n");
-        // symtab_print_table(sem_global, 0);
-        // tree_print(astRoot, 0);
-
+        printf("\nVisual Representation of hashtable:\n");
+        if (sem_global) {
+          symtab_print_table(sem_global, 0);
+        }
+        if (astRoot) {
+          tree_print(astRoot, 0);
+        }
       } else {
         log_error(INTERNAL_ERROR, "Could not open \"%s\"\n", argv[i]);
       }

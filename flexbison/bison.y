@@ -508,28 +508,29 @@ nested_name_specifier:
 
 postfix_expression:
      primary_expression           { $$ = tree_new(postfix_expression, 1, $1); }
-   | postfix_expression '[' expression ']'           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | postfix_expression '(' expression_list_opt ')'           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | DOUBLE '(' expression_list_opt ')'           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | INT '(' expression_list_opt ')'           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | CHAR '(' expression_list_opt ')'           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | BOOL '(' expression_list_opt ')'           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | postfix_expression '.' TEMPLATE COLONCOLON id_expression           { $$ = tree_new(postfix_expression, 5, $1, $2, $3, $4, $5); }
-   | postfix_expression '.' TEMPLATE id_expression           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | postfix_expression '.' COLONCOLON id_expression           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | postfix_expression '.' id_expression           { $$ = tree_new(postfix_expression, 3, $1, $2, $3); }
-   | postfix_expression ARROW TEMPLATE COLONCOLON id_expression           { $$ = tree_new(postfix_expression, 5, $1, $2, $3, $4, $5); }
-   | postfix_expression ARROW TEMPLATE id_expression           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | postfix_expression ARROW COLONCOLON id_expression           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | postfix_expression ARROW id_expression           { $$ = tree_new(postfix_expression, 3, $1, $2, $3); }
-   | postfix_expression PLUSPLUS           { $$ = tree_new(postfix_expression, 2, $1, $2); }
-   | postfix_expression MINUSMINUS           { $$ = tree_new(postfix_expression, 2, $1, $2); }
-   | DYNAMIC_CAST '<' type_id '>' '(' expression ')'           { $$ = tree_new(postfix_expression, 7, $1, $2, $3, $4, $5, $6, $7); }
-   | STATIC_CAST '<' type_id '>' '(' expression ')'           { $$ = tree_new(postfix_expression, 7, $1, $2, $3, $4, $5, $6, $7); }
-   | REINTERPRET_CAST '<' type_id '>' '(' expression ')'           { $$ = tree_new(postfix_expression, 7, $1, $2, $3, $4, $5, $6, $7); }
-   | CONST_CAST '<' type_id '>' '(' expression ')'           { $$ = tree_new(postfix_expression, 7, $1, $2, $3, $4, $5, $6, $7); }
-   | TYPEID '(' expression ')'           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | TYPEID '(' type_id ')'           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
+   | postfix_expression '[' expression ']'           { $$ = tree_new(postfix_expression-1, 4, $1, $2, $3, $4); }
+   | postfix_expression '(' ')'                       { $$ = tree_new(postfix_expression-2, 3, $1, $2, $3); }
+   | postfix_expression '(' expression_list ')'           { $$ = tree_new(postfix_expression-3, 4, $1, $2, $3, $4); }
+   | DOUBLE '(' expression_list_opt ')'           { $$ = NULL; sup_error("this"); }
+   | INT '(' expression_list_opt ')'           { $$ = NULL; sup_error("this"); }
+   | CHAR '(' expression_list_opt ')'           { $$ = NULL; sup_error("this"); }
+   | BOOL '(' expression_list_opt ')'           { $$ = NULL; sup_error("this"); }
+   | postfix_expression '.' TEMPLATE COLONCOLON id_expression           { $$ = NULL; sup_error("template"); }
+   | postfix_expression '.' TEMPLATE id_expression           { $$ = NULL; sup_error("template"); }
+   | postfix_expression '.' COLONCOLON id_expression           { $$ = tree_new(postfix_expression-4, 4, $1, $2, $3, $4); }
+   | postfix_expression '.' id_expression           { $$ = tree_new(postfix_expression-5, 3, $1, $2, $3); }
+   | postfix_expression ARROW TEMPLATE COLONCOLON id_expression           { $$ = NULL; sup_error("template"); }
+   | postfix_expression ARROW TEMPLATE id_expression           { $$ = NULL; sup_error("template"); }
+   | postfix_expression ARROW COLONCOLON id_expression           { $$ = tree_new(postfix_expression-6, 4, $1, $2, $3, $4); }
+   | postfix_expression ARROW id_expression           { $$ = tree_new(postfix_expression-7, 3, $1, $2, $3); }
+   | postfix_expression PLUSPLUS           { $$ = tree_new(postfix_expression-8, 2, $1, $2); }
+   | postfix_expression MINUSMINUS           { $$ = tree_new(postfix_expression-9, 2, $1, $2); }
+   | DYNAMIC_CAST '<' type_id '>' '(' expression ')'           { $$ = NULL; sup_error("cast"); }
+   | STATIC_CAST '<' type_id '>' '(' expression ')'           { $$ = NULL; sup_error("cast"); }
+   | REINTERPRET_CAST '<' type_id '>' '(' expression ')'           { $$ = NULL; sup_error("cast"); }
+   | CONST_CAST '<' type_id '>' '(' expression ')'           { $$ = NULL; sup_error("cast"); }
+   | TYPEID '(' expression ')'           { $$ = NULL; sup_error("typeid"); }
+   | TYPEID '(' type_id ')'           { $$ = NULL; sup_error("typeid"); }
    ;
 
 
@@ -763,9 +764,9 @@ statement_seq:
 
 
 selection_statement:
-     IF '(' condition ')' statement           { $$ = tree_new(selection_statement, 5, $1, $2, $3, $4, $5); }
-   | IF '(' condition ')' statement ELSE statement           { $$ = tree_new(selection_statement, 7, $1, $2, $3, $4, $5, $6, $7); }
-   | SWITCH '(' condition ')' statement           { $$ = tree_new(selection_statement, 5, $1, $2, $3, $4, $5); }
+     IF '(' condition ')' statement           { $$ = tree_new(selection_statement-1, 5, $1, $2, $3, $4, $5); }
+   | IF '(' condition ')' statement ELSE statement           { $$ = tree_new(selection_statement-2, 7, $1, $2, $3, $4, $5, $6, $7); }
+   | SWITCH '(' condition ')' statement           { $$ = tree_new(selection_statement-3, 5, $1, $2, $3, $4, $5); }
    ;
 
 

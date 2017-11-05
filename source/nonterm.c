@@ -55,8 +55,32 @@ char *humanReadable(int label) {
     case nested_name_specifier:
       return strdup("nested_name_specifier");
       break;
-    case postfix_expression:
-      return strdup("postfix_expression");
+    case postfix_expression-1:
+      return strdup("postfix_expression-1");
+      break;
+    case postfix_expression-2:
+      return strdup("postfix_expression-2");
+      break;
+    case postfix_expression-3:
+      return strdup("postfix_expression-3");
+      break;
+    case postfix_expression-4:
+      return strdup("postfix_expression-4");
+      break;
+    case postfix_expression-5:
+      return strdup("postfix_expression-5");
+      break;
+    case postfix_expression-6:
+      return strdup("postfix_expression-6");
+      break;
+    case postfix_expression-7:
+      return strdup("postfix_expression-7");
+      break;
+    case postfix_expression-8:
+      return strdup("postfix_expression-8");
+      break;
+    case postfix_expression-9:
+      return strdup("postfix_expression-9");
       break;
     case expression_list:
       return strdup("expression_list");
@@ -157,8 +181,14 @@ char *humanReadable(int label) {
     case statement_seq-2:
       return strdup("statement_seq-2");
       break;
-    case selection_statement:
-      return strdup("selection_statement");
+    case selection_statement-1:
+      return strdup("selection_statement-1");
+      break;
+    case selection_statement-2:
+      return strdup("selection_statement-2");
+      break;
+    case selection_statement-3:
+      return strdup("selection_statement-3");
       break;
     case condition:
       return strdup("condition");

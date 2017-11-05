@@ -373,21 +373,21 @@ void sem_populate_declarators(TreeNode *treenode, Type *type) {
   }
 }
 
-Type *sem_typecheck(TreeNode *treenode) {
+Type *sem_typecheck(TreeNode *treenode, Symtab *symtab) {
   LOG_ASSERT(treenode);
   switch (treenode->label) {
     case declaration_seq-1:
     case statement_seq-1: {
       LOG_ASSERT(treenode->children[0]);
-      sem_typecheck(treenode->children[0]);
+      sem_typecheck(treenode->children[0], symtab);
     }
     break;
     case declaration_seq-2:
     case statement_seq-2: {
       LOG_ASSERT(treenode->children[0]);
       LOG_ASSERT(treenode->children[1]);
-      sem_typecheck(treenode->children[0]);
-      sem_typecheck(treenode->children[1]);
+      sem_typecheck(treenode->children[0], symtab);
+      sem_typecheck(treenode->children[1], symtab);
     }
     break;
     case function_definition-1: {
@@ -397,115 +397,170 @@ Type *sem_typecheck(TreeNode *treenode) {
       LOG_ASSERT(treenode->children[1]->children[0]->token);
       LOG_ASSERT(treenode->children[2]);
       // TODO: clean up the line below. I don't like the nested children call.
-      SymtabNode *node = symtab_lookup(sem_current, treenode->children[1]->children[0]->token->text);
-      Symtab *temp = sem_current;
-      sem_current = sem_get_function_symtab(node->type);
-      LOG_ASSERT(sem_current);
-      sem_typecheck(treenode->children[2]);
-      sem_current = temp;
-      return sem_typecheck(treenode->children[0]);
+      SymtabNode *node = symtab_lookup(symtab, treenode->children[1]->children[0]->token->text);
+      Symtab *functionscope = sem_get_function_symtab(node->type);
+      LOG_ASSERT(functionscope);
+      sem_typecheck(treenode->children[2], functionscope);
+      return sem_typecheck(treenode->children[0], symtab);
     }
     break;
     case compound_statement: {
       LOG_ASSERT(treenode->children[1]);
       if (treenode->children[1]->label != '}')
-        return sem_typecheck(treenode->children[1]);
+        return sem_typecheck(treenode->children[1], symtab);
       else
         return type_get_basetype(UNKNOWN_T);
     }
     break;
     case expression_statement: {
       LOG_ASSERT(treenode->children[0]);
-      return sem_typecheck(treenode->children[0]);
+      return sem_typecheck(treenode->children[0], symtab);
+    }
+    break;
+    case selection_statement-1: { // IF
+      LOG_ASSERT(treenode->children[2]);
+      return sem_typecheck(treenode->children[2], symtab);
+    }
+    break;
+    case selection_statement-2: { // IF ELSE
+      LOG_ASSERT(treenode->children[2]);
+      LOG_ASSERT(treenode->children[4]);
+      LOG_ASSERT(treenode->children[6]);
+      sem_typecheck(treenode->children[2], symtab);
+      sem_typecheck(treenode->children[4], symtab);
+      sem_typecheck(treenode->children[6], symtab);
+    }
+    break;
+    case selection_statement-3: { // SWITCH
+      //TODO: Support switch statements.
     }
     break;
     case simple_declaration-1: {
       LOG_ASSERT(treenode->children[1]);
-      return sem_typecheck(treenode->children[1]);
+      return sem_typecheck(treenode->children[1], symtab);
     }
     break;
     case init_declarator_list: {
       LOG_ASSERT(treenode->children[0]);
       LOG_ASSERT(treenode->children[2]);
-      sem_typecheck(treenode->children[0]);
-      sem_typecheck(treenode->children[2]);
+      sem_typecheck(treenode->children[0], symtab);
+      sem_typecheck(treenode->children[2], symtab);
     }
     break;
     case init_declarator-2: {
       LOG_ASSERT(treenode->children[0]);
       LOG_ASSERT(treenode->children[1]);
-      Type *type1 = sem_typecheck(treenode->children[0]);
+      Type *type1 = sem_typecheck(treenode->children[0], symtab);
       if (type1->basetype == ARRAY_T) {
         type1 = type1->info.array.type;
       }
-      Type *type2 = sem_typecheck(treenode->children[1]);
-      if (treenode->cnum > 1 && type_compare(type1, type2) != TYPE_EQUAL) {
-        sem_error_from_token("incorrect assignment type", sem_get_leaf(treenode->children[1]));
-        return type_get_basetype(UNKNOWN_T);
-      } else {
-        return type1;
+      if (treenode->cnum > 1) {
+        Type *type2 = sem_typecheck(treenode->children[1], symtab);
+        if (type_compare(type1, type2) != TYPE_EQUAL) {
+          sem_type_error("incorrect assignment type", sem_get_leaf(treenode->children[1]), type1, type2);
+          return type_get_basetype(UNKNOWN_T);
+        }
       }
+      return type1;
     }
     break;
     case direct_declarator-5: {
       LOG_ASSERT(treenode->children[0]);
-      return sem_typecheck(treenode->children[0]);
+      return sem_typecheck(treenode->children[0], symtab);
     }
     break;
     case initializer: {
       LOG_ASSERT(treenode->children[1]);
-      return sem_typecheck(treenode->children[1]);
+      return sem_typecheck(treenode->children[1], symtab);
     }
     break;
     case initializer_clause: {
-      return sem_typecheck(treenode->children[1]);
+      return sem_typecheck(treenode->children[1], symtab);
     }
     break;
     case initializer_list: {
-      Type *type = sem_typecheck(treenode->children[0]);
-      if (type_compare(type, sem_typecheck(treenode->children[2])) != TYPE_EQUAL) {
+      Type *type = sem_typecheck(treenode->children[0], symtab);
+      if (type_compare(type, sem_typecheck(treenode->children[2], symtab)) != TYPE_EQUAL) {
         return type_get_basetype(UNKNOWN_T);
       } else {
         return type;
       }
     }
     break;
-    case postfix_expression: {
+    case postfix_expression-1: { // Array subscript
       LOG_ASSERT(treenode->children[0]);
       LOG_ASSERT(treenode->children[0]->token);
       LOG_ASSERT(treenode->children[0]->token->text);
       LOG_ASSERT(treenode->children[2]);
-      if (sem_typecheck(treenode->children[2]) != type_from_terminal(INT))
-        sem_error_from_token("array subscript is not an integer", sem_get_leaf(treenode->children[2]));
-      return symtab_lookup(sem_current, treenode->children[0]->token->text)->type;
+      Type *type1 = sem_typecheck(treenode->children[2], symtab);
+      Type *type2 = type_get_basetype(INT_T);
+      if (type_compare(type1, type2) != TYPE_EQUAL)
+        sem_type_error("array subscript is not an integer", sem_get_leaf(treenode->children[2]), type1, type2);
+      return symtab_lookup(symtab, treenode->children[0]->token->text)->type;
     }
     break;
-    case additive_expression:
-    case multiplicative_expression:
-    case assignment_expression:
-    case relational_expression: {
+    case postfix_expression-2: { // Function call without params
+      LOG_ASSERT(treenode->children[0]);
+    }
+    break;
+    case postfix_expression-3: { // Function call with params
+      return type_get_basetype(UNKNOWN_T);
+      // get function scope
+      // check that param types match
+      // return function returntype
+    }
+    break;
+    case postfix_expression-4: { // .::IDENTIFIER
+      return type_get_basetype(UNKNOWN_T);
+    }
+    break;
+    case postfix_expression-5: { // .IDENTIFIER
+      return type_get_basetype(UNKNOWN_T);
+    }
+    break;
+    case postfix_expression-6: { // ->::IDENTIFIER
+      return type_get_basetype(UNKNOWN_T);
+    }
+    break;
+    case postfix_expression-7: { // ->IDENTIFIER
+      return type_get_basetype(UNKNOWN_T);
+    }
+    break;
+    case postfix_expression-8: { // IDENTIFIER++
+      return type_get_basetype(UNKNOWN_T);
+    }
+    break;
+    case postfix_expression-9: { // IDENTIFIER--
+      return type_get_basetype(UNKNOWN_T);
+    }
+    break;
+    case additive_expression: // +
+    case multiplicative_expression: // *
+    case assignment_expression: // =
+    case relational_expression: // > <
+    case equality_expression: { // ==
       LOG_ASSERT(treenode->children[0]);
       LOG_ASSERT(treenode->children[2]);
-      Type *type1 = sem_typecheck(treenode->children[0]);
-      Type *type2 = sem_typecheck(treenode->children[2]);
+      Type *type1 = sem_typecheck(treenode->children[0], symtab);
+      Type *type2 = sem_typecheck(treenode->children[2], symtab);
       if (type_compare(type1, type2) == TYPE_EQUAL) {
         return type1;
       } else {
-        sem_type_error(sem_get_leaf(treenode->children[0]), type1, type2);
+        sem_type_error("infix expression type error", sem_get_leaf(treenode->children[0]), type1, type2);
         return type_get_basetype(UNKNOWN_T);
       }
     }
     break;
     case primary_expression: {
       LOG_ASSERT(treenode->children[1]);
-      return sem_typecheck(treenode->children[1]);
+      return sem_typecheck(treenode->children[1], symtab);
     }
     break;
     case IDENTIFIER:
     case CLASS_NAME: {
       LOG_ASSERT(treenode->token);
       LOG_ASSERT(treenode->token->text);
-      SymtabNode *node = symtab_lookup(sem_current, treenode->token->text);
+      SymtabNode *node = symtab_lookup(symtab, treenode->token->text);
       if (!node) {
         sem_error_from_token("symbol has not been declared in this scope", treenode->token);
         return type_get_basetype(UNKNOWN_T);
@@ -607,12 +662,13 @@ void sem_error_from_token(char *message, Token *token) {
                 token->text);
 }
 
-void sem_type_error(Token *token, Type *type1, Type *type2) {
+void sem_type_error(char *message, Token *token, Type *type1, Type *type2) {
   log_error(
-    SEM_ERROR, "SEMANTIC ERROR:%s:%d: Near the token '%s' types %s and %s do not match. \n",
+    SEM_ERROR, "SEMANTIC ERROR:%s:%d: Near the token '%s' %s (types: %s and %s) \n",
     token->filename,
     token->lineno,
     token->text,
+    message,
     type_to_string(type1),
     type_to_string(type2)
   );
