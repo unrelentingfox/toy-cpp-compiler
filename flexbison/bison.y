@@ -541,16 +541,16 @@ expression_list:
 
 
 unary_expression:
-     postfix_expression           { $$ = tree_new(unary_expression, 1, $1); }
-   | PLUSPLUS cast_expression           { $$ = tree_new(unary_expression, 2, $1, $2); }
-   | MINUSMINUS cast_expression           { $$ = tree_new(unary_expression, 2, $1, $2); }
-   | '*' cast_expression           { $$ = tree_new(unary_expression, 2, $1, $2); }
-   | '&' cast_expression           { $$ = tree_new(unary_expression, 2, $1, $2); }
-   | unary_operator cast_expression           { $$ = tree_new(unary_expression, 2, $1, $2); }
-   | SIZEOF unary_expression           { $$ = tree_new(unary_expression, 2, $1, $2); }
-   | SIZEOF '(' type_id ')'           { $$ = tree_new(unary_expression, 4, $1, $2, $3, $4); }
-   | new_expression           { $$ = tree_new(unary_expression, 1, $1); }
-   | delete_expression           { $$ = tree_new(unary_expression, 1, $1); }
+     postfix_expression           { $$ = tree_new(unary_expression-1, 1, $1); }
+   | PLUSPLUS cast_expression           { $$ = tree_new(unary_expression-2, 2, $1, $2); }
+   | MINUSMINUS cast_expression           { $$ = tree_new(unary_expression-3, 2, $1, $2); }
+   | '*' cast_expression           { $$ = tree_new(unary_expression-4, 2, $1, $2); }
+   | '&' cast_expression           { $$ = tree_new(unary_expression-5, 2, $1, $2); }
+   | unary_operator cast_expression           { $$ = tree_new(unary_expression-6, 2, $1, $2); }
+   | SIZEOF unary_expression           { $$ = tree_new(unary_expression-7, 2, $1, $2); }
+   | SIZEOF '(' type_id ')'           { $$ = tree_new(unary_expression-8, 4, $1, $2, $3, $4); }
+   | new_expression           { $$ = tree_new(unary_expression-9, 1, $1); }
+   | delete_expression           { $$ = tree_new(unary_expression-10, 1, $1); }
    ;
 
 
@@ -658,37 +658,37 @@ equality_expression:
 
 and_expression:
      equality_expression           { $$ = tree_new(and_expression, 1, $1); }
-   | and_expression '&' equality_expression           { $$ = tree_new(and_expression, 3, $1, $2, $3); }
+   | and_expression '&' equality_expression           { $$ = NULL; sup_error("single & expression"); }
    ;
 
 
 exclusive_or_expression:
      and_expression           { $$ = tree_new(exclusive_or_expression, 1, $1); }
-   | exclusive_or_expression '^' and_expression           { $$ = tree_new(exclusive_or_expression, 3, $1, $2, $3); }
+   | exclusive_or_expression '^' and_expression           { $$ = NULL; sup_error("exclusive or expression"); }
    ;
 
 
 inclusive_or_expression:
      exclusive_or_expression           { $$ = tree_new(inclusive_or_expression, 1, $1); }
-   | inclusive_or_expression '|' exclusive_or_expression           { $$ = tree_new(inclusive_or_expression, 3, $1, $2, $3); }
+   | inclusive_or_expression '|' exclusive_or_expression           { $$ = NULL; sup_error("inclusive or expression"); }
    ;
 
 
 logical_and_expression:
-     inclusive_or_expression           { $$ = tree_new(logical_and_expression, 1, $1); }
-   | logical_and_expression ANDAND inclusive_or_expression           { $$ = tree_new(logical_and_expression, 3, $1, $2, $3); }
+     inclusive_or_expression           { $$ = tree_new(logical_and_expression-1, 1, $1); }
+   | logical_and_expression ANDAND inclusive_or_expression           { $$ = tree_new(logical_and_expression-2, 3, $1, $2, $3); }
    ;
 
 
 logical_or_expression:
-     logical_and_expression           { $$ = tree_new(logical_or_expression, 1, $1); }
-   | logical_or_expression OROR logical_and_expression           { $$ = tree_new(logical_or_expression, 3, $1, $2, $3); }
+     logical_and_expression           { $$ = tree_new(logical_or_expression-1, 1, $1); }
+   | logical_or_expression OROR logical_and_expression           { $$ = tree_new(logical_or_expression-2, 3, $1, $2, $3); }
    ;
 
 
 conditional_expression:
      logical_or_expression           { $$ = tree_new(conditional_expression, 1, $1); }
-   | logical_or_expression '?' expression ':' assignment_expression           { $$ = tree_new(conditional_expression, 5, $1, $2, $3, $4, $5); }
+   | logical_or_expression '?' expression ':' assignment_expression           { $$ = NULL; sup_error("'?:' conditional"); }
    ;
 
 

@@ -437,6 +437,15 @@ Type *sem_typecheck(TreeNode *treenode, Symtab *symtab) {
       //TODO: Support switch statements.
     }
     break;
+    case logical_and_expression-2:
+    case logical_or_expression-2: {
+      LOG_ASSERT(treenode->children[0]);
+      LOG_ASSERT(treenode->children[2]);
+      sem_typecheck(treenode->children[0], symtab);
+      sem_typecheck(treenode->children[2], symtab);
+      return type_get_basetype(INT_T);
+    }
+    break;
     case simple_declaration-1: {
       LOG_ASSERT(treenode->children[1]);
       return sem_typecheck(treenode->children[1], symtab);
@@ -539,14 +548,23 @@ Type *sem_typecheck(TreeNode *treenode, Symtab *symtab) {
       return type_get_basetype(UNKNOWN_T);
     }
     break;
-    case postfix_expression-8: { // IDENTIFIER++
-      return type_get_basetype(UNKNOWN_T);
-    }
-    break;
+    case postfix_expression-8:   // IDENTIFIER++
     case postfix_expression-9: { // IDENTIFIER--
-      return type_get_basetype(UNKNOWN_T);
+      // make sure the type is INTEGER
+      LOG_ASSERT(treenode->children[0]);
+      Type *type1 = type_get_basetype(INT_T);
+      Type *type2 = sem_typecheck(treenode->children[0], symtab);
+      if (type_compare(type1, type2) != TYPE_EQUAL) {
+        sem_type_error("++ and -- operators only work on integers in 120++", sem_get_leaf(treenode->children[0]), type1, type2);
+      }
+      return type2;
     }
     break;
+    case unary_expression-6: { // !IDENTIFIER
+      LOG_ASSERT(treenode->children[1]);
+      sem_typecheck(treenode->children[1], symtab);
+      return type_get_basetype(INT_T);
+    }
     case additive_expression: // +
     case multiplicative_expression: // *
     case assignment_expression: // =

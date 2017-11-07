@@ -85,7 +85,36 @@ char *humanReadable(int label) {
     case expression_list:
       return strdup("expression_list");
       break;
-    case unary_expression:
+    case unary_expression-1:
+      return strdup("unary_expression-1");
+      break;
+    case unary_expression-2:
+      return strdup("unary_expression-2");
+      break;
+    case unary_expression-3:
+      return strdup("unary_expression-3");
+      break;
+    case unary_expression-4:
+      return strdup("unary_expression-4");
+      break;
+    case unary_expression-5:
+      return strdup("unary_expression-5");
+      break;
+    case unary_expression-6:
+      return strdup("unary_expression-6");
+      break;
+    case unary_expression-7:
+      return strdup("unary_expression-7");
+      break;
+    case unary_expression-8:
+      return strdup("unary_expression-8");
+      break;
+    case unary_expression-9:
+      return strdup("unary_expression-9");
+      break;
+    case unary_expression-10:
+      return strdup("unary_expression-10");
+      break;
       return strdup("unary_expression");
       break;
     case unary_operator:
@@ -142,11 +171,17 @@ char *humanReadable(int label) {
     case inclusive_or_expression:
       return strdup("inclusive_or_expression");
       break;
-    case logical_and_expression:
-      return strdup("logical_and_expression");
+    case logical_and_expression-1:
+      return strdup("logical_and_expression-1");
       break;
-    case logical_or_expression:
-      return strdup("logical_or_expression");
+    case logical_and_expression-2:
+      return strdup("logical_and_expression-2");
+      break;
+    case logical_or_expression-1:
+      return strdup("logical_or_expression-1");
+      break;
+    case logical_or_expression-2:
+      return strdup("logical_or_expression-2");
       break;
     case conditional_expression:
       return strdup("conditional_expression");
