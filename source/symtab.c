@@ -47,7 +47,7 @@ int symtab_insert(Symtab *table, char *key, Type *type) {
   LOG_ASSERT(key);
 
   //check for redeclaration
-  if (symtab_lookup(table, key))
+  if (symtab_lookup_local(table, key))
     return SYM_REDECLARED;
 
   // create the node
@@ -76,6 +76,14 @@ int symtab_insert(Symtab *table, char *key, Type *type) {
 // lookup a symbol in a scope and its parent scopes
 // returns NULL if symbol does not exist
 SymtabNode *symtab_lookup(Symtab *table, char *key) {
+  return symtab_lookup_(table, key, 1);
+}
+// lookup a symbol only in the scope specified, not in the parent scopes.
+SymtabNode *symtab_lookup_local(Symtab *table, char *key) {
+  return symtab_lookup_(table, key, 1);
+}
+// the search function, with a flag to decide whether or not to search parent.
+static SymtabNode *symtab_lookup_(Symtab *table, char *key, int searchparent) {
   LOG_ASSERT(table);
   LOG_ASSERT(key);
   int hash = symtab_hash(key) % TABLE_SIZE;
@@ -88,11 +96,15 @@ SymtabNode *symtab_lookup(Symtab *table, char *key) {
     target = symtab_search_bucket(table->buckets[hash], key);
   if (target)
     return target;
-  else if (table->parent != NULL) /* search parent scope if it exists */
+  else if (searchparent && table->parent != NULL) /* search parent scope if it exists */
     return symtab_lookup(table->parent, key);
   else
     return NULL;
 }
+
+
+
+
 
 SymtabNode *symtab_search_bucket(SymtabNode *node, char *key) {
   LOG_ASSERT(node);

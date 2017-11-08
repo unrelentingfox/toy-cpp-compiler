@@ -36,7 +36,7 @@ void sem_populate(TreeNode *treenode) {
       sem_populate(treenode->children[1]);
       break;
     case function_definition-1:
-      sem_populate_function_definition(treenode, NULL);
+      sem_populate_function_definition(treenode, NULL, sem_current);
       break;
     case simple_declaration-1: { // class specifier
       sem_populate_declarators(treenode->children[1],
@@ -47,13 +47,13 @@ void sem_populate(TreeNode *treenode) {
       sem_populate_class_definition(treenode->children[0], NULL);
     }
     break;
-    case IDENTIFIER: {
-      if (!symtab_lookup(sem_current, treenode->token->text))
-        log_sem_error(treenode->token->filename,
-                      treenode->token->lineno,
-                      "symbol has not been declared in this scope",
-                      treenode->token->text);
-    }
+      // case IDENTIFIER: {
+      //   if (!symtab_lookup(sem_current, treenode->token->text))
+      //     log_sem_error(treenode->token->filename,
+      //                   treenode->token->lineno,
+      //                   "symbol has not been declared in this scope",
+      //                   treenode->token->text);
+      // }
     break;
     default: {
       int i;
@@ -136,83 +136,94 @@ void sem_populate_class_definition(TreeNode *treenode, Type *type) {
  * @param      treenode  The treenode
  * @param      type      The type
  */
-void sem_populate_function_definition(TreeNode *treenode, Type *type) {
-  //printf("POPULATE FUNCTION DEF\n");
+Symtab *sem_populate_function_definition(TreeNode *treenode, Type *type, Symtab *symtab) {
+  //classoffset used to allow the use of the same code for all the direct_declarators since class functios have more children.
+  int classoffset = 0;
   LOG_ASSERT(treenode);
   switch (treenode->label) {
     case function_definition-1:
       type = sem_get_type_from_token(treenode->children[0]);
-      sem_populate_function_definition(treenode->children[1], type);
-      sem_populate_function_definition(treenode->children[2], type);
+      symtab = sem_populate_function_definition(treenode->children[1], type, symtab);
+      sem_populate_function_definition(treenode->children[2], type, symtab);
+      return symtab;
       break;
-    case direct_declarator-1: { /* direct_declarator '(' parameter_declaration_clause ')' */
-      //printf("function: %s\n", treenode->children[0]->token->text);
-      //printf("nodes(%d) text(%s)", sem_current->nNodes, treenode->children[0]->token->text);
+    // direct declarator 1 through 4 use the same code with slight variations.
+    case direct_declarator-4: /* CLASS_NAME COLONCOLON CLASS_NAME '(' parameter_declaration_clause ')' */
+      // this is a constructor so it returns void
+      type = type_get_basetype(VOID_T);
+    case direct_declarator-3: /* CLASS_NAME COLONCOLON declarator_id '(' parameter_declaration_clause ')'  */
+      // since this is a class function we must change the scope to the class scope.
+      classoffset = 2;
+      LOG_ASSERT(treenode->children[0]);
+      LOG_ASSERT(treenode->children[0]->token);
+      LOG_ASSERT(treenode->children[0]->token->text);
+      SymtabNode *class = symtab_lookup(symtab, treenode->children[0]->token->text);
+      if (!class || !class->type || class->type->basetype != CLASS_T) {
+        sem_error_from_token("class does not exist in this scope", treenode->children[0]->token);
+        return symtab;
+      } else {
+        LOG_ASSERT(class->type->info.class.public);
+        symtab = class->type->info.class.public;
+      }
+    case direct_declarator-1:   /* direct_declarator '(' parameter_declaration_clause ')' */
+    case direct_declarator-2: { /* CLASS_NAME '(' parameter_declaration_clause ')'  */
+      LOG_ASSERT(type);
       SymtabNode *tempnode = NULL;
-      tempnode = symtab_lookup(sem_current, treenode->children[0]->token->text);
-      //printf("HERE\n");
+      tempnode = symtab_lookup_local(symtab, treenode->children[0 + classoffset]->token->text);
       if (tempnode) { /* check if function has been declared */
-        //printf("NODE EXISTS!\n");
         if (tempnode->type->basetype != FUNCTION_T) {
           /* if the symbol was defined as a different type, error */
-          log_sem_error(treenode->children[0]->token->filename,
-                        treenode->children[0]->token->lineno,
+          log_sem_error(treenode->children[0 + classoffset]->token->filename,
+                        treenode->children[0 + classoffset]->token->lineno,
                         "symbol was already declared",
-                        treenode->children[0]->token->text);
-          return;
+                        treenode->children[0 + classoffset]->token->text);
+          return symtab;
         } else if (tempnode->type->info.function.status == FUNC_DEFINED) {
           /* if it was already defined, error*/
-          log_sem_error(treenode->children[0]->token->filename,
-                        treenode->children[0]->token->lineno,
+          log_sem_error(treenode->children[0 + classoffset]->token->filename,
+                        treenode->children[0 + classoffset]->token->lineno,
                         "function was already defined",
-                        treenode->children[0]->token->text);
-          return;
+                        treenode->children[0 + classoffset]->token->text);
+          return symtab;
         } else if (type_compare(tempnode->type->info.function.returntype, type) == TYPE_NOT_EQUAL) {
           /* if it was declared, but the return types don't match, error */
-          log_sem_error(treenode->children[0]->token->filename,
-                        treenode->children[0]->token->lineno,
-                        "return type does not match declaration",
-                        treenode->children[0]->token->text);
+          sem_type_error("return type does not match declaration",
+                         treenode->children[0 + classoffset]->token,
+                         tempnode->type->info.function.returntype,
+                         type
+                        );
+          return symtab;
         } else { /* if it was declared with no errors, set the type to that function */
           type = tempnode->type;
         }
-      } else { /* if not defined, create new function type and add to symtab */
-        //printf("CREATING FUNCTION!!!!\n");
-        Type *temptype = type_new_function(type);
-        type = temptype;
-        if (symtab_insert(sem_current, treenode->children[0]->token->text, type) == SYM_REDECLARED) {
-          log_sem_error(treenode->children[0]->token->filename,
-                        treenode->children[0]->token->lineno,
+      } else {
+        type = type_new_function(type);
+        if (symtab_insert(symtab, treenode->children[0 + classoffset]->token->text, type) == SYM_REDECLARED) {
+          log_sem_error(treenode->children[0 + classoffset]->token->filename,
+                        treenode->children[0 + classoffset]->token->lineno,
                         "symbol was already declared",
-                        treenode->children[0]->token->text);
+                        treenode->children[0 + classoffset]->token->text);
         }
       }
       /* create function symbtab */
-      type->info.function.symtab = symtab_new_table(sem_current);
+      type->info.function.symtab = symtab_new_table(symtab);
       /* add parameters to symtab */
-      sem_current = type->info.function.symtab;
-      if (treenode->children[2]->label == parameter_declaration ||
-          treenode->children[2]->label == parameter_declaration_list) {
-        sem_populate_parameter_definition(treenode->children[2], type, 0);
+      symtab = type->info.function.symtab;
+      if (treenode->children[2 + classoffset]->label == parameter_declaration ||
+          treenode->children[2 + classoffset]->label == parameter_declaration_list) {
+        sem_populate_parameter_definition(treenode->children[2 + classoffset], type, 0);
         type->info.function.status = FUNC_DEFINED;
       }
-      sem_current = sem_current->parent;
-      /* set sem_current to function scope */
-      sem_current = type->info.function.symtab;
     }
+
+    return symtab;
     break;
-    // case direct_declarator-2: /* CLASS_NAME '(' parameter_declaration_clause ')'  */
-    // case direct_declarator-3: /* CLASS_NAME COLONCOLON declarator_id '(' parameter_declaration_clause ')'  */
-    // case direct_declarator-4:  CLASS_NAME COLONCOLON CLASS_NAME '(' parameter_declaration_clause ')'
-    //   /* check if the class exists */
-    //   /* if it does, change scope to that class scope and handle function */
-    //   /* if it does not, throw and error and ignore the function */
-    //   //printf("CLASS FOUND BRUHHHHHHHHHHH\n");
-    //   break;
     /* TODO: implement class method definitions */
     case compound_statement: {
+      Symtab *prev = sem_current;
+      sem_current = symtab;
       sem_populate(treenode->children[1]);
-      sem_current = sem_current->parent;
+      sem_current = prev;
     }
     break;
   }
@@ -270,7 +281,7 @@ int sem_populate_parameter_definition(TreeNode *treenode, Type *functype, int pa
         case FUNC_NEW: {
           /* if the function is being defined and declared at the same time
           create the parameters and insert them into the symbol table. */
-          if (symtab_insert(functype->info.function.symtab, treenode->children[1]->token->text, temptype)) {
+          if (symtab_insert(functype->info.function.symtab, treenode->children[1]->token->text, temptype) == SYM_REDECLARED) {
             log_sem_error(treenode->children[1]->token->filename,
                           treenode->children[1]->token->lineno,
                           "symbol was already declared",
@@ -291,7 +302,7 @@ int sem_populate_parameter_definition(TreeNode *treenode, Type *functype, int pa
                           treenode->children[1]->token->text);
           } else if (functype->info.function.parameters[paramcount]) {
             if (type_compare(functype->info.function.parameters[paramcount]->type, temptype) == TYPE_EQUAL) {
-              if (symtab_insert(functype->info.function.symtab, treenode->children[1]->token->text, temptype)) {
+              if (symtab_insert(functype->info.function.symtab, treenode->children[1]->token->text, temptype) == SYM_REDECLARED) {
                 log_sem_error(treenode->children[1]->token->filename,
                               treenode->children[1]->token->lineno,
                               "symbol was already declared",
@@ -346,10 +357,8 @@ void sem_populate_declarators(TreeNode *treenode, Type *type) {
       sem_populate_declarators(treenode->children[1], type);
     }
     break;
-    case direct_declarator-1: {   /* direct_declarator '(' parameter_declaration_clause ')' */
-//    case direct_declarator-2:   /* CLASS_NAME '(' parameter_declaration_clause ')' */
-//    case direct_declarator-3:   /* CLASS_NAME COLONCOLON declarator_id '(' parameter_declaration_clause ')' */
-//    case direct_declarator-4:   /* CLASS_NAME COLONCOLON CLASS_NAME '(' parameter_declaration_clause ')' */
+    case direct_declarator-1:     /* direct_declarator '(' parameter_declaration_clause ')' */
+    case direct_declarator-2: {   /* CLASS_NAME '(' parameter_declaration_clause ')' */
       Type *temp = type_new_function(type);
       temp->info.function.status = FUNC_DECLARED;
       if (treenode->children[2]->label == parameter_declaration ||
@@ -435,6 +444,7 @@ Type *sem_typecheck(TreeNode *treenode, Symtab *symtab) {
     break;
     case selection_statement-3: { // SWITCH
       //TODO: Support switch statements.
+      return type_get_basetype(UNKNOWN_T);
     }
     break;
     case logical_and_expression-2:
@@ -750,3 +760,96 @@ void sem_type_error(char *message, Token *token, Type *type1, Type *type2) {
     type_to_string(type2)
   );
 }
+
+
+// void *sem_populate_new(Type *type, TreeNode *treenode, Symtab *symtab) {
+//   switch (treenode->label) {
+//     case declaration_seq-1:
+//     case statement_seq-1: {
+//       LOG_ASSERT(treenode->children[0]);
+//       sem_populate_new(type_get_basetype(UNKNOWN_T), treenode->children[0], symtab);
+//     }
+//     case declaration_seq-2:
+//     case statement_seq-2: {
+//       LOG_ASSERT(treenode->children[0]);
+//       LOG_ASSERT(treenode->children[1]);
+//       sem_sem_populate_new(type_get_basetype(UNKNOWN_T), treenode->children[0], symtab);
+//       sem_sem_populate_new(type_get_basetype(UNKNOWN_T), treenode->children[1], symtab);
+//     }
+//     break;
+//     case function_definition-1: {
+//       LOG_ASSERT(treenode->children[0]);
+//       LOG_ASSERT(treenode->children[1]);
+//       LOG_ASSERT(treenode->children[2]);
+//       Type *returntype = sem_get_type_from_token(treenode->children[0]);
+//       Type *functype = sem_populate_(returntype, treenode->children[1], symtab);
+//       sem_sem_populate_new(type_get_basetype(UNKNOWN_T), treenode->children[2], functype->info.function.symtab);
+//     }
+
+//     break;
+//     case compound_statement: {
+//       LOG_ASSERT(treenode->children[1]);
+//       if (treenode->children[1]->label != '}')
+//         sem_populate_new(type_get_basetype(UNKNOWN_T), treenode->children[1], symtab);
+//     }
+//     break;
+//     case expression_statement: {
+//       LOG_ASSERT(treenode->children[0]);
+//       sem_populate_new(type_get_basetype(UNKNOWN_T), treenode->children[0], symtab);
+//     }
+//     break;
+//     case selection_statement-1: { // IF
+//       LOG_ASSERT(treenode->children[2]);
+//       sem_populate_new(type_get_basetype(UNKNOWN_T), treenode->children[2], symtab);
+//     }
+//     break;
+//     case selection_statement-2: { // IF ELSE
+//       LOG_ASSERT(treenode->children[2]);
+//       LOG_ASSERT(treenode->children[4]);
+//       LOG_ASSERT(treenode->children[6]);
+//       sem_populate_new(type_get_basetype(UNKNOWN_T), treenode->children[2], symtab);
+//       sem_populate_new(type_get_basetype(UNKNOWN_T), treenode->children[4], symtab);
+//       sem_populate_new(type_get_basetype(UNKNOWN_T), treenode->children[6], symtab);
+//     }
+//     break;
+//     case logical_and_expression-2:
+//     case logical_or_expression-2: {
+//       LOG_ASSERT(treenode->children[0]);
+//       LOG_ASSERT(treenode->children[2]);
+//       sem_populate_new(type_get_basetype(UNKNOWN_T), treenode->children[0], symtab);
+//       sem_populate_new(type_get_basetype(UNKNOWN_T), treenode->children[2], symtab);
+//       type_get_basetype(INT_T);
+//     }
+//     case simple_declaration-1:
+//     case init_declarator_list:
+//     case init_declarator-2:
+//     case direct_declarator-5:
+//     case initializer:
+//     case initializer_clause:
+//     case initializer_list:
+//     case postfix_expression-1:
+//     case postfix_expression-2:
+//     case postfix_expression-3:
+//     case postfix_expression-4:
+//     case postfix_expression-5:
+//     case postfix_expression-6:
+//     case postfix_expression-7:
+//     case postfix_expression-8:   // IDENTIFIER++
+//     case postfix_expression-9:
+//     case unary_expression-6:
+//     case additive_expression: // +
+//     case multiplicative_expression: // *
+//     case assignment_expression: // =
+//     case relational_expression: // > <
+//     case equality_expression:
+//     case primary_expression:
+//     case IDENTIFIER:
+//     case CLASS_NAME:
+//     case INTEGER:
+//     case CHARACTER:
+//     case FLOATING:
+//     case STRING:
+//     case TRUE:
+//     case FALSE:
+//   }
+// }

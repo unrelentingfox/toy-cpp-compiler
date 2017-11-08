@@ -168,6 +168,13 @@ Type *type_from_terminal(enum yytokentype terminal) {
   }
 }
 
+/**
+ * @brief      depricated, please use one of the specilized helper functions.
+ *
+ * @param[in]  basetype  The basetype
+ *
+ * @return     { description_of_the_return_value }
+ */
 Type *type_new(enum BaseType basetype) {
   if (!BASETYPES_INITIALIZED)
     type_initialize_basetypes();
@@ -207,7 +214,7 @@ Type *type_new_function(Type *returntype) {
   newtype->info.function.status = FUNC_NEW;
   newtype->info.function.returntype = returntype;
   newtype->info.function.nparams = 0;
-  newtype->info.function.parameters = (Parameter **)malloc(sizeof(Parameter *) * 256);
+  newtype->info.function.parameters = (Parameter **)malloc(sizeof(Parameter *) * 22);
   newtype->info.function.symtab = NULL;
   return newtype;
 }
