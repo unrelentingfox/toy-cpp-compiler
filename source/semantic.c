@@ -104,11 +104,12 @@ void sem_populate_class_definition(TreeNode *treenode, Type *type) {
       sem_current = type->info.class.public;
     }
     break;
-    case member_specification-1:
+    case member_specification-1: {
       sem_populate_class_definition(treenode->children[0], type);
       if (treenode->children[1])
         sem_populate_class_definition(treenode->children[1], type);
-      break;
+    }
+    break;
     case member_declaration: {
       if (treenode->children[0]->label == class_specifier)
         sem_populate_class_definition(treenode->children[0], type);
@@ -123,6 +124,11 @@ void sem_populate_class_definition(TreeNode *treenode, Type *type) {
                         "symbol was already declared",
                         treenode->children[1]->token->text);
       }
+    }
+    break;
+    case member_specification-2: { // TODO: support private variables.
+      LOG_ASSERT(treenode->children[2]);
+      sem_populate_class_definition(treenode->children[2], type);
     }
     break;
   }
@@ -564,18 +570,16 @@ Type *sem_typecheck(TreeNode *treenode, Symtab *symtab) {
     break;
     case postfix_expression-3: { // Function call with params
       LOG_ASSERT(treenode->children[0]);
-      LOG_ASSERT(treenode->children[0]->token);
-      LOG_ASSERT(treenode->children[0]->token->text);
       LOG_ASSERT(treenode->children[2]);
       // get the function type
-      SymtabNode *node = symtab_lookup(symtab, treenode->children[0]->token->text);
-      if (node->type && node->type->basetype == FUNCTION_T) { // make sure the function exists
-        int nparams = sem_typecheck_function_params(treenode->children[2], symtab, node->type, 0);
-        if (nparams != node->type->info.function.nparams) // check if there were enough parameters
-          sem_error_from_token("not enough parameters for function call", treenode->children[0]->token);
-        return node->type->info.function.returntype;
+      Type *type = sem_typecheck(treenode->children[0], symtab);
+      if (type && type->basetype == FUNCTION_T) { // make sure the function exists
+        int nparams = sem_typecheck_function_params(treenode->children[2], symtab, type, 0);
+        if (nparams != type->info.function.nparams) // check if there were enough parameters
+          sem_error_from_token("not enough parameters for function call", sem_get_leaf(treenode->children[0]));
+        return type->info.function.returntype;
       } else {
-        sem_error_from_token("function does not exist", treenode->children[0]->token);
+        sem_error_from_token("function was not declared in this scope", sem_get_leaf(treenode->children[0]));
         return type_get_basetype(UNKNOWN_T);
       }
     }
@@ -584,8 +588,18 @@ Type *sem_typecheck(TreeNode *treenode, Symtab *symtab) {
       return type_get_basetype(UNKNOWN_T);
     }
     break;
-    case postfix_expression-5: { // .IDENTIFIER
-      return type_get_basetype(UNKNOWN_T);
+    case postfix_expression-5: { // IDENTIFIER.IDENTIFIER
+      LOG_ASSERT(treenode->children[0]);
+      LOG_ASSERT(treenode->children[2]);
+      Type *type = sem_typecheck(treenode->children[0], symtab);
+      if (!type || type->basetype != CLASS_INSTANCE_T) {
+        return type_get_basetype(UNKNOWN_T);
+      } else {
+        LOG_ASSERT(type->info.classinstance.classtype);
+        LOG_ASSERT(type->info.classinstance.classtype->info.class.public);
+        return sem_typecheck(treenode->children[2], type->info.classinstance.classtype->info.class.public);
+      }
+
     }
     break;
     case postfix_expression-6: { // ->::IDENTIFIER
