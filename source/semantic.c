@@ -407,9 +407,11 @@ Type *sem_typecheck(TreeNode *treenode, Symtab *symtab) {
       LOG_ASSERT(treenode->children[1]->children[0]);
       LOG_ASSERT(treenode->children[1]->children[0]->token);
       LOG_ASSERT(treenode->children[2]);
-      // TODO: clean up the line below. I don't like the nested children call.
-      SymtabNode *node = symtab_lookup(symtab, treenode->children[1]->children[0]->token->text);
-      Symtab *functionscope = sem_get_function_symtab(node->type);
+      Type *functype = sem_typecheck(treenode->children[1], symtab);
+      if (!functype || functype->basetype != FUNCTION_T) {
+        return type_get_basetype(UNKNOWN_T);
+      }
+      Symtab *functionscope = sem_get_function_symtab(functype);
       LOG_ASSERT(functionscope);
       sem_typecheck(treenode->children[2], functionscope);
       return sem_typecheck(treenode->children[0], symtab);
@@ -483,6 +485,42 @@ Type *sem_typecheck(TreeNode *treenode, Symtab *symtab) {
         }
       }
       return type1;
+    }
+    break;
+    case direct_declarator-4: /* CLASS_NAME COLONCOLON CLASS_NAME '(' parameter_declaration_clause ')' */
+    case direct_declarator-3: /* CLASS_NAME COLONCOLON declarator_id '(' parameter_declaration_clause ')'  */
+      LOG_ASSERT(treenode->children[0]);
+      LOG_ASSERT(treenode->children[0]->token);
+      LOG_ASSERT(treenode->children[0]->token->text);
+      LOG_ASSERT(treenode->children[2]);
+      LOG_ASSERT(treenode->children[2]->token);
+      LOG_ASSERT(treenode->children[2]->token->text);
+      SymtabNode *classnode = symtab_lookup(symtab, treenode->children[0]->token->text);
+      if (!classnode || !classnode->type || !classnode->type->info.class.public) {
+        sem_error_from_token("clsss was not declared in this scope", treenode->children[0]->token);
+        return type_get_basetype(UNKNOWN_T);
+      } else {
+        symtab = classnode->type->info.class.public;
+      }
+      SymtabNode *funcnode = symtab_lookup(symtab, treenode->children[2]->token->text);
+      if (!funcnode || !funcnode->type || funcnode->type->basetype != FUNCTION_T) {
+        sem_error_from_token("function was not declared in this scope", treenode->children[2]->token);
+        return type_get_basetype(UNKNOWN_T);
+      } else {
+        return funcnode->type;
+      }
+    case direct_declarator-1:   /* direct_declarator '(' parameter_declaration_clause ')' */
+    case direct_declarator-2: { /* CLASS_NAME '(' parameter_declaration_clause ')'  */
+      LOG_ASSERT(treenode->children[0]);
+      LOG_ASSERT(treenode->children[0]->token);
+      LOG_ASSERT(treenode->children[0]->token->text);
+      SymtabNode *funcnode = symtab_lookup(symtab, treenode->children[0]->token->text);
+      if (!funcnode || !funcnode->type || funcnode->type->basetype != FUNCTION_T) {
+        sem_error_from_token("function was not declared in this scope", treenode->children[0]->token);
+        return type_get_basetype(UNKNOWN_T);
+      } else {
+        return funcnode->type;
+      }
     }
     break;
     case direct_declarator-5: {
