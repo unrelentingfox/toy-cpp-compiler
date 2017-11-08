@@ -80,7 +80,7 @@ SymtabNode *symtab_lookup(Symtab *table, char *key) {
 }
 // lookup a symbol only in the scope specified, not in the parent scopes.
 SymtabNode *symtab_lookup_local(Symtab *table, char *key) {
-  return symtab_lookup_(table, key, 1);
+  return symtab_lookup_(table, key, 0);
 }
 // the search function, with a flag to decide whether or not to search parent.
 static SymtabNode *symtab_lookup_(Symtab *table, char *key, int searchparent) {
