@@ -437,6 +437,30 @@ Type *sem_typecheck(TreeNode *treenode, Symtab *symtab) {
         return type_get_basetype(UNKNOWN_T);
     }
     break;
+    case jump_statement-2:   // return;
+    case jump_statement-3: { // return expression;
+      LOG_ASSERT(treenode->children[0]);
+      LOG_ASSERT(treenode->children[1]);
+      Type *functype = symtab->type;
+      if (!functype || functype->basetype != FUNCTION_T) {
+        sem_error_from_token("return outside of function", sem_get_leaf(treenode->children[0]));
+        return type_get_basetype(UNKNOWN_T);
+      } else {
+        Type *type1 = functype->info.function.returntype;
+        Type *type2 = NULL;
+        if (treenode->children[1]->label != ';')
+          type2 = sem_typecheck(treenode->children[1], symtab);
+        else
+          type2 = type_get_basetype(VOID_T);
+        if (type_compare(type1, type2) != TYPE_EQUAL) {
+          sem_type_error("return does not match function type", sem_get_leaf(treenode->children[0]), type1, type2);
+          return type_get_basetype(UNKNOWN_T);
+        } else {
+          return type2;
+        }
+      }
+    }
+    break;
     case expression_statement: {
       LOG_ASSERT(treenode->children[0]);
       return sem_typecheck(treenode->children[0], symtab);

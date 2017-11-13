@@ -209,6 +209,8 @@ Type *type_new(enum BaseType basetype) {
 }
 
 Type *type_new_function(Type *returntype) {
+  if (!returntype)
+    returntype = type_get_basetype(VOID_T);
   if (!BASETYPES_INITIALIZED)
     type_initialize_basetypes();
   Type *newtype = (Type *)malloc(sizeof(Type));

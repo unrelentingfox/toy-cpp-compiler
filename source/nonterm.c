@@ -234,8 +234,14 @@ char *humanReadable(int label) {
     case for_init_statement:
       return strdup("for_init_statement");
       break;
-    case jump_statement:
-      return strdup("jump_statement");
+    case jump_statement-1:
+      return strdup("jump_statement-1");
+      break;
+    case jump_statement-2:
+      return strdup("jump_statement-2");
+      break;
+    case jump_statement-3:
+      return strdup("jump_statement-3");
       break;
     case declaration_statement:
       return strdup("declaration_statement");

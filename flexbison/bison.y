@@ -790,10 +790,11 @@ for_init_statement:
 
 
 jump_statement:
-     BREAK ';'           { $$ = tree_new(jump_statement, 2, $1, $2); }
-   | CONTINUE ';'           { $$ = tree_new(jump_statement, 2, $1, $2); }
-   | RETURN expression_opt ';'           { $$ = tree_new(jump_statement, 3, $1, $2, $3); }
-   | GOTO identifier ';'           { $$ = tree_new(jump_statement, 3, $1, $2, $3); }
+     BREAK ';'           { $$ = tree_new(jump_statement-1, 2, $1, $2); }
+   | RETURN ';'          { $$ = tree_new(jump_statement-2, 2, $1, $2); }
+   | RETURN expression ';'           { $$ = tree_new(jump_statement-3, 3, $1, $2, $3); }
+   | CONTINUE ';'           { $$ = NULL; sup_error("continue statement"); }
+   | GOTO identifier ';'           { $$ = NULL; sup_error("goto statement"); }
    ;
 
 
