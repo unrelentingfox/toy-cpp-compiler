@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define PARAM_LIMIT 22
+
 static int BASETYPES_INITIALIZED;
 
 static void type_initialize_basetypes() {
@@ -214,7 +216,11 @@ Type *type_new_function(Type *returntype) {
   newtype->info.function.status = FUNC_NEW;
   newtype->info.function.returntype = returntype;
   newtype->info.function.nparams = 0;
-  newtype->info.function.parameters = (Parameter **)malloc(sizeof(Parameter *) * 22);
+  // TODO: dynamically increase size of param_limit instead of fixed variable;
+  newtype->info.function.parameters = (Parameter **)malloc(sizeof(Parameter *) * PARAM_LIMIT);
+  for (int i = 0; i < PARAM_LIMIT; i++) {
+    newtype->info.function.parameters[i] = NULL;
+  }
   newtype->info.function.symtab = NULL;
   return newtype;
 }

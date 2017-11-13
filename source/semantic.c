@@ -12,7 +12,7 @@ Symtab *sem_current; /* TODO: remove global current and just make it a parameter
 
 int sem_init_global() {
   //TODO: create a function to free symtab before init.
-  sem_global = symtab_new_table(NULL);
+  sem_global = symtab_new_table(NULL, NULL);
   sem_current = sem_global;
 }
 
@@ -100,7 +100,7 @@ void sem_populate_class_definition(TreeNode *treenode, Type *type) {
         symtab_insert(sem_current, type->info.class.name, type);
       }
       /* set sem_current to class scope to add all members */
-      type->info.class.public = symtab_new_table(sem_current);
+      type->info.class.public = symtab_new_table(sem_current, type);
       sem_current = type->info.class.public;
     }
     break;
@@ -212,7 +212,7 @@ Symtab *sem_populate_function_definition(TreeNode *treenode, Type *type, Symtab 
         }
       }
       /* create function symbtab */
-      type->info.function.symtab = symtab_new_table(symtab);
+      type->info.function.symtab = symtab_new_table(symtab, type);
       /* add parameters to symtab */
       symtab = type->info.function.symtab;
       if (treenode->children[2 + classoffset]->label == parameter_declaration ||
@@ -244,15 +244,21 @@ Symtab *sem_populate_function_definition(TreeNode *treenode, Type *type, Symtab 
  */
 void sem_populate_parameter_declaration(TreeNode *treenode, Type *functype) {
   //printf("PARAM_DELC\n");
+  LOG_ASSERT(treenode);
+  LOG_ASSERT(functype);
   if (!treenode || functype->basetype != FUNCTION_T)
     return;
   switch (treenode->label) {
     case parameter_declaration_list:
+      LOG_ASSERT(treenode->children[0]);
+      LOG_ASSERT(treenode->children[2]);
       sem_populate_parameter_declaration(treenode->children[0], functype);
       sem_populate_parameter_declaration(treenode->children[2], functype);
       break;
     case parameter_declaration: {
-      functype->info.function.parameters[functype->info.function.nparams]->type = sem_get_type_from_token(treenode->children[0]);
+      int nparams = functype->info.function.nparams;
+      Type *type = sem_get_type_from_token(treenode->children[0]);
+      functype->info.function.parameters[nparams] = type_new_parameter(type);
       functype->info.function.nparams++;
     }
     break;

@@ -7,7 +7,7 @@
 #include <stdbool.h>
 
 // creates a new symbol table, whose scope is local to (or inside) parent
-Symtab *symtab_new_table(Symtab *parent) {
+Symtab *symtab_new_table(Symtab *parent, Type *type) {
   Symtab *new_symtab = NULL;
   // allocate the hashtable
   if ((new_symtab = (Symtab *)malloc(sizeof(Symtab))) == NULL) {
@@ -17,7 +17,11 @@ Symtab *symtab_new_table(Symtab *parent) {
   if (parent)
     new_symtab->parent = parent;
   else
-    parent = NULL;
+    new_symtab->parent = NULL;
+  if (type)
+    new_symtab->type = type;
+  else
+    new_symtab->type = NULL;
   //allocate bucket pointers
   if ((new_symtab->buckets = (SymtabNode **)malloc(sizeof(SymtabNode *) * TABLE_SIZE)) == NULL) {
     log_error(INTERNAL_ERROR, "ERROR: could not allocate new hashtable.");
