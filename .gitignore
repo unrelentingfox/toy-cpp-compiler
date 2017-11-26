@@ -4,8 +4,10 @@
 *bison.h
 *flex.c
 test/*
-*worksheet.c
+*worksheet*
 bin/*
-test/*
+*test*
 example.c
 output.txt
+*120++*
+a.out

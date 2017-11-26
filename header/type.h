@@ -54,7 +54,7 @@ typedef struct ClassInfo {    /* structs */
 } ClassInfo;
 
 typedef struct ClassInstanceInfo {
-  struct Type* classtype;
+  struct Type *classtype;
 } ClassInstanceInfo;
 
 typedef struct Parameter {
@@ -80,11 +80,27 @@ typedef struct Type {
   } info;
 } Type;
 
-BaseType type_from_terminal(enum yytokentype terminal);
+struct Type *void_t;
+struct Type *int_t;
+struct Type *short_t;
+struct Type *long_t;
+struct Type *float_t;
+struct Type *double_t;
+struct Type *char_t;
+struct Type *unsigned_t;
+struct Type *unknown_t;
 
-Type *type_new(BaseType basetype);
-Parameter *type_new_parameter(Type *type);
-
-TypeCompareResults type_compare(Type *type1, Type *type2);
+static int BASETYPES_INITIALIZED;
+static void type_initialize_basetypes();
+Type *type_get_basetype();
+char *type_to_string(Type *type);
+struct Type *type_from_terminal(enum yytokentype terminal);
+struct Type *type_new(BaseType basetype);
+Type *type_new_function(Type *returntype);
+Type *type_new_class(char *name);
+Type *type_new_class_instance(Type *classtype);
+Type *type_new_array(Type *type, int size);
+struct Parameter *type_new_parameter(Type *type);
+enum TypeCompareResults type_compare(Type *type1, Type *type2);
 
 #endif

@@ -7,7 +7,7 @@
 #include <stdbool.h>
 
 // creates a new symbol table, whose scope is local to (or inside) parent
-Symtab *symtab_new_table(Symtab *parent) {
+Symtab *symtab_new_table(Symtab *parent, Type *type) {
   Symtab *new_symtab = NULL;
   // allocate the hashtable
   if ((new_symtab = (Symtab *)malloc(sizeof(Symtab))) == NULL) {
@@ -17,7 +17,11 @@ Symtab *symtab_new_table(Symtab *parent) {
   if (parent)
     new_symtab->parent = parent;
   else
-    parent = NULL;
+    new_symtab->parent = NULL;
+  if (type)
+    new_symtab->type = type;
+  else
+    new_symtab->type = NULL;
   //allocate bucket pointers
   if ((new_symtab->buckets = (SymtabNode **)malloc(sizeof(SymtabNode *) * TABLE_SIZE)) == NULL) {
     log_error(INTERNAL_ERROR, "ERROR: could not allocate new hashtable.");
@@ -31,8 +35,8 @@ Symtab *symtab_new_table(Symtab *parent) {
 }
 
 SymtabNode *symtab_new_node(char *key, Type *type) {
-  log_assert(key, "key");
-  log_assert(type, "type");
+  LOG_ASSERT(key);
+  LOG_ASSERT(type);
   SymtabNode *node = (SymtabNode *)malloc(sizeof(SymtabNode));
   node->key = strdup(key);
   node->type = type;
@@ -43,11 +47,11 @@ SymtabNode *symtab_new_node(char *key, Type *type) {
 // insert a symbol into a table
 // return values correlate with symtabErrors enum
 int symtab_insert(Symtab *table, char *key, Type *type) {
-  log_assert(table, "table");
-  log_assert(key, "key");
+  LOG_ASSERT(table);
+  LOG_ASSERT(key);
 
   //check for redeclaration
-  if (symtab_lookup(table, key))
+  if (symtab_lookup_local(table, key))
     return SYM_REDECLARED;
 
   // create the node
@@ -76,8 +80,16 @@ int symtab_insert(Symtab *table, char *key, Type *type) {
 // lookup a symbol in a scope and its parent scopes
 // returns NULL if symbol does not exist
 SymtabNode *symtab_lookup(Symtab *table, char *key) {
-  log_assert(table, "table");
-  log_assert(key, "key");
+  return symtab_lookup_(table, key, 1);
+}
+// lookup a symbol only in the scope specified, not in the parent scopes.
+SymtabNode *symtab_lookup_local(Symtab *table, char *key) {
+  return symtab_lookup_(table, key, 0);
+}
+// the search function, with a flag to decide whether or not to search parent.
+static SymtabNode *symtab_lookup_(Symtab *table, char *key, int searchparent) {
+  LOG_ASSERT(table);
+  LOG_ASSERT(key);
   int hash = symtab_hash(key) % TABLE_SIZE;
   //printf("hash: %d\n", hash);
 
@@ -88,15 +100,19 @@ SymtabNode *symtab_lookup(Symtab *table, char *key) {
     target = symtab_search_bucket(table->buckets[hash], key);
   if (target)
     return target;
-  else if (table->parent != NULL) /* search parent scope if it exists */
+  else if (searchparent && table->parent != NULL) /* search parent scope if it exists */
     return symtab_lookup(table->parent, key);
   else
     return NULL;
 }
 
+
+
+
+
 SymtabNode *symtab_search_bucket(SymtabNode *node, char *key) {
-  log_assert(node, "node");
-  log_assert(key, "key");
+  LOG_ASSERT(node);
+  LOG_ASSERT(key);
   int firstLoop = true;
   do {
     if (!firstLoop)
@@ -122,7 +138,7 @@ int symtab_hash(char *key) {
 }
 
 void symtab_print_table(Symtab *table, int indent) {
-  log_assert(table, "table");
+  LOG_ASSERT(table);
   for (int i = 0; i < TABLE_SIZE; i++) {
     if (table->buckets[i]) {
       for (int j = 0; j < indent; j++) {
@@ -133,8 +149,8 @@ void symtab_print_table(Symtab *table, int indent) {
       if (table->buckets[i]->type->basetype == FUNCTION_T
           && table->buckets[i]->type->info.function.symtab) {
         symtab_print_table(table->buckets[i]->type->info.function.symtab, indent + 4);
-      } else if(table->buckets[i]->type->basetype == CLASS_T
-          && table->buckets[i]->type->info.class.public) {
+      } else if (table->buckets[i]->type->basetype == CLASS_T
+                 && table->buckets[i]->type->info.class.public) {
         symtab_print_table(table->buckets[i]->type->info.class.public, indent + 4);
       }
     }

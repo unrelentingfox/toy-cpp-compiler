@@ -45,6 +45,7 @@
 #include "../header/bison.h"
 #include "../header/tree.h"
 #include "../header/logger.h"
+#include "../header/pwd.h"
 
 /*
  * Debug info 
@@ -70,12 +71,11 @@ int typenametable_lookup(char *s);
 
 static void lexerr(char *s);
 static void sup_error(char *message);
-static void handle_include();
+static void handle_include(char* fname);
 static int set_yylval(int category);
 static void record_comment();
 static void single_line_comment();
 
-static void skip_until_eol(void);
 static void skip_comment(void);
 static int check_identifier(char *);
 void set_filename(char* fname);
@@ -92,8 +92,8 @@ stringtext  ([^"])|(\\.)
 
 "\n"                                  { ++lineno; }
 [\t\f\v\r ]+                          { /* Ignore whitespace. */ }
+"//".*                                { /* Ignore one line comments */ }
 "/*"                                  { skip_comment(); }
-"//"                                  { skip_until_eol(); }
 "{"                                   { return set_yylval('{'); }
 "<%"                                  { return set_yylval('{'); }
 "}"                                   { return set_yylval('}'); }
@@ -231,9 +231,19 @@ stringtext  ([^"])|(\\.)
 "L'"{chartext}*"'"                    { return set_yylval(CHARACTER); }
 "\""{stringtext}*"\""                 { return set_yylval(STRING); }
 "L\""{stringtext}*"\""                { return set_yylval(STRING); }
-"#include"[ ]*\"[^\\"]+\"             { handle_include(); }
-"#include <iostream>"                 { saw_iostream = 1; }
-"#include <string>"                   { saw_string = 1; }
+"#include"[ ]*\"[^\\"]+\"             { 
+                                        char *fname = strchr(yytext, '\"')+1;
+                                        fname[strlen(fname)-1] = '\0';
+                                        handle_include(fname); 
+                                      }
+"#include <iostream>"                 { 
+                                        saw_iostream = 1;
+                                        handle_include(strcat(PWD(),"/../includes/iostream.h"));
+                                      }
+"#include <string>"                   { 
+                                        saw_string = 1; 
+                                        handle_include(strcat(PWD(),"/../includes/string.h"));
+                                      }
 "using namespace std;"                { 
                                         saw_std = 1;
                                         if (saw_string) typenametable_insert("string", CLASS_NAME);
@@ -279,18 +289,6 @@ static void skip_comment(void)
       c1 = c2;
       c2 = input();
    }
-}
-
-/*
- * See the previous comment for an explanation.
- */
-static void skip_until_eol(void)
-{
-   int c;
-
-   while ((c = input()) != EOF && c != '\n')
-      ;
-   ++lineno;
 }
 
 /*
@@ -380,24 +378,34 @@ static int set_yylval(int category) {
  */
 static void lexerr(char *message)
 {
+  LOG_ASSERT(message);
+  LOG_ASSERT(yylval.treenode);
+  LOG_ASSERT(yylval.treenode->token);
+  LOG_ASSERT(yylval.treenode->token->filename);
+  LOG_ASSERT(yylval.treenode->token->lineno);
+  LOG_ASSERT(yylval.treenode->token->text);
   log_lex_error(yylval.treenode->token->filename,yylval.treenode->token->lineno, message,  yylval.treenode->token->text);
 }
 
 static void sup_error(char *message){
+  LOG_ASSERT(message);
+  LOG_ASSERT(yylval.treenode);
+  LOG_ASSERT(yylval.treenode->token);
+  LOG_ASSERT(yylval.treenode->token->filename);
+  LOG_ASSERT(yylval.treenode->token->lineno);
+  LOG_ASSERT(yylval.treenode->token->text);
   log_sup_error(yylval.treenode->token->filename,yylval.treenode->token->lineno, message,  yylval.treenode->token->text);
 }
 
 /*
  * Parse all include files before parsing current file.
  */
-static void handle_include()
+static void handle_include(char* fname)
 {
-   char *fname = strchr(yytext, '\"')+1;
-   fname[strlen(fname)-1] = '\0';
    FILE *file = fopen(fname,"r");
    YY_BUFFER_STATE buffer;
    if (file == NULL) {
-     lexerr("cannot open include file");
+     log_lex_error(filename, lineno, "can not open include file", yytext);
    } else{
       // Push the original filename onto a stack.
       FileNameStack *tempNode = (FileNameStack*)malloc(sizeof(FileNameStack));

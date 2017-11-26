@@ -237,7 +237,7 @@ sup_error(char *message);
 %type < treenode > statement_seq_opt
 %type < treenode > condition_opt
 %type < treenode > enumerator_list_opt
-%type < treenode > initializer_opt
+//%type < treenode > initializer_opt
 %type < treenode > constant_expression_opt
 %type < treenode > abstract_declarator_opt
 %type < treenode > type_specifier_seq_opt
@@ -508,28 +508,29 @@ nested_name_specifier:
 
 postfix_expression:
      primary_expression           { $$ = tree_new(postfix_expression, 1, $1); }
-   | postfix_expression '[' expression ']'           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | postfix_expression '(' expression_list_opt ')'           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | DOUBLE '(' expression_list_opt ')'           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | INT '(' expression_list_opt ')'           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | CHAR '(' expression_list_opt ')'           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | BOOL '(' expression_list_opt ')'           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | postfix_expression '.' TEMPLATE COLONCOLON id_expression           { $$ = tree_new(postfix_expression, 5, $1, $2, $3, $4, $5); }
-   | postfix_expression '.' TEMPLATE id_expression           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | postfix_expression '.' COLONCOLON id_expression           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | postfix_expression '.' id_expression           { $$ = tree_new(postfix_expression, 3, $1, $2, $3); }
-   | postfix_expression ARROW TEMPLATE COLONCOLON id_expression           { $$ = tree_new(postfix_expression, 5, $1, $2, $3, $4, $5); }
-   | postfix_expression ARROW TEMPLATE id_expression           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | postfix_expression ARROW COLONCOLON id_expression           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | postfix_expression ARROW id_expression           { $$ = tree_new(postfix_expression, 3, $1, $2, $3); }
-   | postfix_expression PLUSPLUS           { $$ = tree_new(postfix_expression, 2, $1, $2); }
-   | postfix_expression MINUSMINUS           { $$ = tree_new(postfix_expression, 2, $1, $2); }
-   | DYNAMIC_CAST '<' type_id '>' '(' expression ')'           { $$ = tree_new(postfix_expression, 7, $1, $2, $3, $4, $5, $6, $7); }
-   | STATIC_CAST '<' type_id '>' '(' expression ')'           { $$ = tree_new(postfix_expression, 7, $1, $2, $3, $4, $5, $6, $7); }
-   | REINTERPRET_CAST '<' type_id '>' '(' expression ')'           { $$ = tree_new(postfix_expression, 7, $1, $2, $3, $4, $5, $6, $7); }
-   | CONST_CAST '<' type_id '>' '(' expression ')'           { $$ = tree_new(postfix_expression, 7, $1, $2, $3, $4, $5, $6, $7); }
-   | TYPEID '(' expression ')'           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
-   | TYPEID '(' type_id ')'           { $$ = tree_new(postfix_expression, 4, $1, $2, $3, $4); }
+   | postfix_expression '[' expression ']'           { $$ = tree_new(postfix_expression-1, 4, $1, $2, $3, $4); }
+   | postfix_expression '(' ')'                       { $$ = tree_new(postfix_expression-2, 3, $1, $2, $3); }
+   | postfix_expression '(' expression_list ')'           { $$ = tree_new(postfix_expression-3, 4, $1, $2, $3, $4); }
+   | DOUBLE '(' expression_list_opt ')'           { $$ = NULL; sup_error("this"); }
+   | INT '(' expression_list_opt ')'           { $$ = NULL; sup_error("this"); }
+   | CHAR '(' expression_list_opt ')'           { $$ = NULL; sup_error("this"); }
+   | BOOL '(' expression_list_opt ')'           { $$ = NULL; sup_error("this"); }
+   | postfix_expression '.' TEMPLATE COLONCOLON id_expression           { $$ = NULL; sup_error("template"); }
+   | postfix_expression '.' TEMPLATE id_expression           { $$ = NULL; sup_error("template"); }
+   | postfix_expression '.' COLONCOLON id_expression           { $$ = tree_new(postfix_expression-4, 4, $1, $2, $3, $4); }
+   | postfix_expression '.' id_expression           { $$ = tree_new(postfix_expression-5, 3, $1, $2, $3); }
+   | postfix_expression ARROW TEMPLATE COLONCOLON id_expression           { $$ = NULL; sup_error("template"); }
+   | postfix_expression ARROW TEMPLATE id_expression           { $$ = NULL; sup_error("template"); }
+   | postfix_expression ARROW COLONCOLON id_expression           { $$ = tree_new(postfix_expression-6, 4, $1, $2, $3, $4); }
+   | postfix_expression ARROW id_expression           { $$ = tree_new(postfix_expression-7, 3, $1, $2, $3); }
+   | postfix_expression PLUSPLUS           { $$ = tree_new(postfix_expression-8, 2, $1, $2); }
+   | postfix_expression MINUSMINUS           { $$ = tree_new(postfix_expression-9, 2, $1, $2); }
+   | DYNAMIC_CAST '<' type_id '>' '(' expression ')'           { $$ = NULL; sup_error("cast"); }
+   | STATIC_CAST '<' type_id '>' '(' expression ')'           { $$ = NULL; sup_error("cast"); }
+   | REINTERPRET_CAST '<' type_id '>' '(' expression ')'           { $$ = NULL; sup_error("cast"); }
+   | CONST_CAST '<' type_id '>' '(' expression ')'           { $$ = NULL; sup_error("cast"); }
+   | TYPEID '(' expression ')'           { $$ = NULL; sup_error("typeid"); }
+   | TYPEID '(' type_id ')'           { $$ = NULL; sup_error("typeid"); }
    ;
 
 
@@ -540,16 +541,16 @@ expression_list:
 
 
 unary_expression:
-     postfix_expression           { $$ = tree_new(unary_expression, 1, $1); }
-   | PLUSPLUS cast_expression           { $$ = tree_new(unary_expression, 2, $1, $2); }
-   | MINUSMINUS cast_expression           { $$ = tree_new(unary_expression, 2, $1, $2); }
-   | '*' cast_expression           { $$ = tree_new(unary_expression, 2, $1, $2); }
-   | '&' cast_expression           { $$ = tree_new(unary_expression, 2, $1, $2); }
-   | unary_operator cast_expression           { $$ = tree_new(unary_expression, 2, $1, $2); }
-   | SIZEOF unary_expression           { $$ = tree_new(unary_expression, 2, $1, $2); }
-   | SIZEOF '(' type_id ')'           { $$ = tree_new(unary_expression, 4, $1, $2, $3, $4); }
-   | new_expression           { $$ = tree_new(unary_expression, 1, $1); }
-   | delete_expression           { $$ = tree_new(unary_expression, 1, $1); }
+     postfix_expression           { $$ = tree_new(unary_expression-1, 1, $1); }
+   | PLUSPLUS cast_expression           { $$ = tree_new(unary_expression-2, 2, $1, $2); }
+   | MINUSMINUS cast_expression           { $$ = tree_new(unary_expression-3, 2, $1, $2); }
+   | '*' cast_expression           { $$ = tree_new(unary_expression-4, 2, $1, $2); }
+   | '&' cast_expression           { $$ = tree_new(unary_expression-5, 2, $1, $2); }
+   | unary_operator cast_expression           { $$ = tree_new(unary_expression-6, 2, $1, $2); }
+   | SIZEOF unary_expression           { $$ = tree_new(unary_expression-7, 2, $1, $2); }
+   | SIZEOF '(' type_id ')'           { $$ = tree_new(unary_expression-8, 4, $1, $2, $3, $4); }
+   | new_expression           { $$ = tree_new(unary_expression-9, 1, $1); }
+   | delete_expression           { $$ = tree_new(unary_expression-10, 1, $1); }
    ;
 
 
@@ -657,37 +658,37 @@ equality_expression:
 
 and_expression:
      equality_expression           { $$ = tree_new(and_expression, 1, $1); }
-   | and_expression '&' equality_expression           { $$ = tree_new(and_expression, 3, $1, $2, $3); }
+   | and_expression '&' equality_expression           { $$ = NULL; sup_error("single & expression"); }
    ;
 
 
 exclusive_or_expression:
      and_expression           { $$ = tree_new(exclusive_or_expression, 1, $1); }
-   | exclusive_or_expression '^' and_expression           { $$ = tree_new(exclusive_or_expression, 3, $1, $2, $3); }
+   | exclusive_or_expression '^' and_expression           { $$ = NULL; sup_error("exclusive or expression"); }
    ;
 
 
 inclusive_or_expression:
      exclusive_or_expression           { $$ = tree_new(inclusive_or_expression, 1, $1); }
-   | inclusive_or_expression '|' exclusive_or_expression           { $$ = tree_new(inclusive_or_expression, 3, $1, $2, $3); }
+   | inclusive_or_expression '|' exclusive_or_expression           { $$ = NULL; sup_error("inclusive or expression"); }
    ;
 
 
 logical_and_expression:
-     inclusive_or_expression           { $$ = tree_new(logical_and_expression, 1, $1); }
-   | logical_and_expression ANDAND inclusive_or_expression           { $$ = tree_new(logical_and_expression, 3, $1, $2, $3); }
+     inclusive_or_expression           { $$ = tree_new(logical_and_expression-1, 1, $1); }
+   | logical_and_expression ANDAND inclusive_or_expression           { $$ = tree_new(logical_and_expression-2, 3, $1, $2, $3); }
    ;
 
 
 logical_or_expression:
-     logical_and_expression           { $$ = tree_new(logical_or_expression, 1, $1); }
-   | logical_or_expression OROR logical_and_expression           { $$ = tree_new(logical_or_expression, 3, $1, $2, $3); }
+     logical_and_expression           { $$ = tree_new(logical_or_expression-1, 1, $1); }
+   | logical_or_expression OROR logical_and_expression           { $$ = tree_new(logical_or_expression-2, 3, $1, $2, $3); }
    ;
 
 
 conditional_expression:
      logical_or_expression           { $$ = tree_new(conditional_expression, 1, $1); }
-   | logical_or_expression '?' expression ':' assignment_expression           { $$ = tree_new(conditional_expression, 5, $1, $2, $3, $4, $5); }
+   | logical_or_expression '?' expression ':' assignment_expression           { $$ = NULL; sup_error("'?:' conditional"); }
    ;
 
 
@@ -763,9 +764,9 @@ statement_seq:
 
 
 selection_statement:
-     IF '(' condition ')' statement           { $$ = tree_new(selection_statement, 5, $1, $2, $3, $4, $5); }
-   | IF '(' condition ')' statement ELSE statement           { $$ = tree_new(selection_statement, 7, $1, $2, $3, $4, $5, $6, $7); }
-   | SWITCH '(' condition ')' statement           { $$ = tree_new(selection_statement, 5, $1, $2, $3, $4, $5); }
+     IF '(' condition ')' statement           { $$ = tree_new(selection_statement-1, 5, $1, $2, $3, $4, $5); }
+   | IF '(' condition ')' statement ELSE statement           { $$ = tree_new(selection_statement-2, 7, $1, $2, $3, $4, $5, $6, $7); }
+   | SWITCH '(' condition ')' statement           { $$ = tree_new(selection_statement-3, 5, $1, $2, $3, $4, $5); }
    ;
 
 
@@ -789,10 +790,11 @@ for_init_statement:
 
 
 jump_statement:
-     BREAK ';'           { $$ = tree_new(jump_statement, 2, $1, $2); }
-   | CONTINUE ';'           { $$ = tree_new(jump_statement, 2, $1, $2); }
-   | RETURN expression_opt ';'           { $$ = tree_new(jump_statement, 3, $1, $2, $3); }
-   | GOTO identifier ';'           { $$ = tree_new(jump_statement, 3, $1, $2, $3); }
+     BREAK ';'           { $$ = tree_new(jump_statement-1, 2, $1, $2); }
+   | RETURN ';'          { $$ = tree_new(jump_statement-2, 2, $1, $2); }
+   | RETURN expression ';'           { $$ = tree_new(jump_statement-3, 3, $1, $2, $3); }
+   | CONTINUE ';'           { $$ = NULL; sup_error("continue statement"); }
+   | GOTO identifier ';'           { $$ = NULL; sup_error("goto statement"); }
    ;
 
 
@@ -831,8 +833,8 @@ block_declaration:
 
 
 simple_declaration:
-     decl_specifier_seq init_declarator_list ';'           { $$ = tree_new(simple_declaration, 3, $1, $2, $3); }
-   | decl_specifier_seq ';'           { $$ = tree_new(simple_declaration, 2, $1, $2); }
+     decl_specifier_seq init_declarator_list ';'           { $$ = tree_new(simple_declaration-1, 3, $1, $2, $3); }
+   | decl_specifier_seq ';'           { $$ = tree_new(simple_declaration-2, 2, $1, $2); }
    ;
 
 
@@ -1037,7 +1039,8 @@ init_declarator_list:
 
 
 init_declarator:
-     declarator initializer_opt           { $$ = tree_new(init_declarator, 2, $1, $2); }
+     declarator                          { $$ = tree_new(init_declarator-1, 1, $1); }
+   | declarator initializer              { $$ = tree_new(init_declarator-2, 2, $1, $2); }
    ;
 
 
@@ -1556,10 +1559,10 @@ enumerator_list_opt:
    ;
 
 
-initializer_opt:
-     /* epsilon */          { $$ = NULL; }
-   | initializer           { $$ = tree_new(initializer_opt, 1, $1); }
-   ;
+//initializer_opt:
+//     /* epsilon */          { $$ = NULL; }
+//   | initializer           { $$ = tree_new(initializer_opt, 1, $1); }
+//   ;
 
 
 constant_expression_opt:

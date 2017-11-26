@@ -19,12 +19,13 @@ typedef struct SymbolTableNode {
 
 typedef struct SymbolTable {
   struct SymbolTable *parent;     // the parent scope. If NULL then this is global scope.
+  struct Type *type;              // if the symtab is a function or class scope, the function or class type will be stored here.
   int nNodes;                     // number of nodes stored in this table.
   struct SymbolTableNode **buckets;  // the table itself. An array of nodes or "buckets".
 } Symtab;
 
 // creates a new symbol table, whose scope is local to (or inside) parent
-Symtab *symtab_new_table(Symtab *parent);
+Symtab *symtab_new_table(Symtab *parent, struct Type *type);
 SymtabNode *symtab_new_node(char *key, struct Type *type);
 
 // insert a symbol into a table
@@ -32,6 +33,8 @@ int symtab_insert(Symtab *table, char *key, struct Type *type);
 
 // lookup a symbol in a table; returns structure pointer including type and offset. lookup operations are often chained together progressively from most local scope on out to global scope.
 SymtabNode *symtab_lookup(Symtab *table, char *key);
+SymtabNode *symtab_lookup_local(Symtab *table, char *key);
+static SymtabNode *symtab_lookup_(Symtab *table, char *key, int searchparent);
 
 SymtabNode *symtab_search_bucket(SymtabNode *head, char *key);
 

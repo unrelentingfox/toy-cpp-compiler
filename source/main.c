@@ -10,7 +10,7 @@ extern int yyparse();
 extern TreeNode *astRoot;
 extern Symtab *sem_global;
 extern int log_first_error;
-extern void set_filename(char* fname);
+extern void set_filename(char *fname);
 
 int main(int argc, char **argv) {
   log_init_global();
@@ -25,13 +25,26 @@ int main(int argc, char **argv) {
         // Lexical and Syntax analysis
         yyparse();
         // Semantic analysis
-        sem_init_global();
-        sem_populate(astRoot);
+        if (!log_first_error) {
+          sem_init_global();
+          sem_populate(astRoot);
+        }
+        // Type checking
+        if (!log_first_error) {
+          sem_typecheck(astRoot, sem_global);
+        }
         log_final_status();
-        // debug
-        printf("\nVisual Representation of hashtable:\n");
-        symtab_print_table(sem_global, 0);
         fclose(yyin);
+// optional debug output
+#ifdef DEBUG_120PP
+        printf("\nVisual Representation of hashtable:\n");
+        if (sem_global) {
+          symtab_print_table(sem_global, 0);
+        }
+        if (astRoot) {
+          tree_print(astRoot, 0);
+        }
+#endif
       } else {
         log_error(INTERNAL_ERROR, "Could not open \"%s\"\n", argv[i]);
       }
@@ -40,5 +53,7 @@ int main(int argc, char **argv) {
 
   if (log_first_error) {
     return log_first_error;
+  } else {
+    return 0;
   }
 }
