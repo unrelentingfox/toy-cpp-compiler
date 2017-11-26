@@ -35,7 +35,8 @@ int main(int argc, char **argv) {
         }
         log_final_status();
         fclose(yyin);
-        // debug
+// optional debug output
+#ifdef DEBUG_120PP
         printf("\nVisual Representation of hashtable:\n");
         if (sem_global) {
           symtab_print_table(sem_global, 0);
@@ -43,6 +44,7 @@ int main(int argc, char **argv) {
         if (astRoot) {
           tree_print(astRoot, 0);
         }
+#endif
       } else {
         log_error(INTERNAL_ERROR, "Could not open \"%s\"\n", argv[i]);
       }

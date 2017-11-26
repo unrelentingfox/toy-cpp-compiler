@@ -113,6 +113,9 @@ void sem_populate_class_definition(TreeNode *treenode, Type *type) {
     case member_declaration: {
       if (treenode->children[0]->label == class_specifier)
         sem_populate_class_definition(treenode->children[0], type);
+      else if (treenode->children[0]->label == function_definition
+               || treenode->children[0]->label == function_definition - 1)
+        sem_populate_function_definition(treenode->children[0], type, sem_current);
       else if (treenode->children[1]->label == direct_declarator)
         sem_populate_declarators(treenode->children[1],
                                  sem_get_type_from_token(treenode->children[0]));
@@ -147,6 +150,12 @@ Symtab *sem_populate_function_definition(TreeNode *treenode, Type *type, Symtab 
   int classoffset = 0;
   LOG_ASSERT(treenode);
   switch (treenode->label) {
+    case function_definition:
+      type = type_get_basetype(VOID_T);
+      symtab = sem_populate_function_definition(treenode->children[0], type, symtab);
+      sem_populate_function_definition(treenode->children[1], type, symtab);
+      return symtab;
+      break;
     case function_definition-1:
       type = sem_get_type_from_token(treenode->children[0]);
       symtab = sem_populate_function_definition(treenode->children[1], type, symtab);
@@ -605,7 +614,7 @@ Type *sem_typecheck(TreeNode *treenode, Symtab *symtab) {
       Type *type = sem_typecheck(treenode->children[0], symtab);
       if (type && type->basetype == FUNCTION_T) { // make sure the function exists
         int nparams = sem_typecheck_function_params(treenode->children[2], symtab, type, 0);
-        if (nparams != type->info.function.nparams) // check if there were enough parameters
+        if (nparams != -1 && nparams != type->info.function.nparams) // check if there were enough parameters
           sem_error_from_token("not enough parameters for function call", sem_get_leaf(treenode->children[0]));
         return type->info.function.returntype;
       } else {
@@ -833,7 +842,7 @@ void sem_error_from_token(char *message, Token *token) {
 
 void sem_type_error(char *message, Token *token, Type *type1, Type *type2) {
   log_error(
-    SEM_ERROR, "SEMANTIC ERROR:%s:%d: Near the token '%s' %s (types: %s != %s) \n",
+    SEM_ERROR, "%s:%d:SEMANTIC ERROR: Near the token '%s' %s (types: %s != %s) \n",
     token->filename,
     token->lineno,
     token->text,

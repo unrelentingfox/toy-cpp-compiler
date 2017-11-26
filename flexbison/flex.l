@@ -76,7 +76,6 @@ static int set_yylval(int category);
 static void record_comment();
 static void single_line_comment();
 
-static void skip_until_eol(void);
 static void skip_comment(void);
 static int check_identifier(char *);
 void set_filename(char* fname);
@@ -93,8 +92,8 @@ stringtext  ([^"])|(\\.)
 
 "\n"                                  { ++lineno; }
 [\t\f\v\r ]+                          { /* Ignore whitespace. */ }
+"//".*                                { /* Ignore one line comments */ }
 "/*"                                  { skip_comment(); }
-"//"                                  { skip_until_eol(); }
 "{"                                   { return set_yylval('{'); }
 "<%"                                  { return set_yylval('{'); }
 "}"                                   { return set_yylval('}'); }
@@ -290,18 +289,6 @@ static void skip_comment(void)
       c1 = c2;
       c2 = input();
    }
-}
-
-/*
- * See the previous comment for an explanation.
- */
-static void skip_until_eol(void)
-{
-   int c;
-
-   while ((c = input()) != EOF && c != '\n')
-      ;
-   ++lineno;
 }
 
 /*

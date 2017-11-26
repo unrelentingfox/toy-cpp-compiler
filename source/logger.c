@@ -21,19 +21,19 @@ void log_error(ErrorTypes errortype, const char *format, ...) {
 
 void log_lex_error(char *filename, int lineno, char *message, char *token) {
   va_list args;
-  log_error(LEX_ERROR, "LEXICAL ERROR:%s:%d: Near the token '%s' %s. \n", filename, lineno, token, message);
+  log_error(LEX_ERROR, "%s:%d:LEXICAL ERROR: Near the token '%s' %s. \n", filename, lineno, token, message);
 }
 
 void log_syn_error(char *filename, int lineno, char *message, char *token) {
-  log_error(SYN_ERROR, "SYNTAX ERROR:%s:%d: Near the token '%s' %s. \n", filename, lineno, token, message);
+  log_error(SYN_ERROR, "%s:%d:SYNTAX ERROR: Near the token '%s' %s. \n", filename, lineno, token, message);
 }
 
 void log_sup_error(char *filename, int lineno, char *message, char *token) {
-  log_error(SUP_ERROR, "NOT SUPPORTED ERROR:%s:%d: Near the token '%s' %s is not supported int 120++. \n", filename, lineno, token, message);
+  log_error(SUP_ERROR, "%s:%d:NOT SUPPORTED ERROR: Near the token '%s' %s is not supported int 120++. \n", filename, lineno, token, message);
 }
 
 void log_sem_error(char *filename, int lineno, char *message, char *token) {
-  log_error(SEM_ERROR, "SEMANTIC ERROR:%s:%d: Near the token '%s' %s. \n", filename, lineno, token, message);
+  log_error(SEM_ERROR, "%s:%d:SEMANTIC ERROR: Near the token '%s' %s. \n", filename, lineno, token, message);
 }
 
 void log_final_status() {
