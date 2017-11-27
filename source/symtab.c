@@ -23,13 +23,13 @@ Symtab *symtab_new_table(Symtab *parent, Type *type) {
   else
     new_symtab->type = NULL;
   //allocate bucket pointers
-  if ((new_symtab->buckets = (SymtabNode **)malloc(sizeof(SymtabNode *) * TABLE_SIZE)) == NULL) {
+  if ((new_symtab->buckets = (SymtabNode **)malloc(sizeof(SymtabNode *) * SYMTAB_SIZE)) == NULL) {
     log_error(INTERNAL_ERROR, "ERROR: could not allocate new hashtable.");
   }
-  for (int i = 0; i < TABLE_SIZE; i++) {
+  for (int i = 0; i < SYMTAB_SIZE; i++) {
     new_symtab->buckets[i] = NULL;
   }
-  new_symtab->nNodes = 0;
+  new_symtab->count = 0;
 
   return new_symtab;
 }
@@ -58,7 +58,7 @@ int symtab_insert(Symtab *table, char *key, Type *type) {
   SymtabNode *node = symtab_new_node(key, type);
 
   // insert the node
-  int hash = symtab_hash(key) % TABLE_SIZE;
+  int hash = symtab_hash(key) % SYMTAB_SIZE;
   if (table->buckets[hash] == NULL) {
     table->buckets[hash] = node;
   } else {
@@ -69,7 +69,7 @@ int symtab_insert(Symtab *table, char *key, Type *type) {
     tmp->next = node;
   }
   if (table->buckets[hash]) {
-    table->nNodes++;
+    table->count++;
     return SYM_SUCCESS;
   } else {
     log_error(INTERNAL_ERROR, "ERROR: Node could not be inserted into the symboltable.\n");
@@ -90,7 +90,7 @@ SymtabNode *symtab_lookup_local(Symtab *table, char *key) {
 static SymtabNode *symtab_lookup_(Symtab *table, char *key, int searchparent) {
   LOG_ASSERT(table);
   LOG_ASSERT(key);
-  int hash = symtab_hash(key) % TABLE_SIZE;
+  int hash = symtab_hash(key) % SYMTAB_SIZE;
   //printf("hash: %d\n", hash);
 
   SymtabNode *target = NULL;
@@ -105,10 +105,6 @@ static SymtabNode *symtab_lookup_(Symtab *table, char *key, int searchparent) {
   else
     return NULL;
 }
-
-
-
-
 
 SymtabNode *symtab_search_bucket(SymtabNode *node, char *key) {
   LOG_ASSERT(node);
@@ -134,12 +130,76 @@ int symtab_hash(char *key) {
   while (c = *key++)
     hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
-  return hash % TABLE_SIZE;
+  return hash % SYMTAB_SIZE;
+}
+
+int symtab_set_addresses(Symtab *symtab, enum MemoryRegion region) {
+  int offset = 0;
+  SymtabNode *node;
+  for (int i = 0; i < SYMTAB_SIZE; i++) { // traverse the symtab
+    node = symtab->buckets[i];
+    while (node != NULL) { // traverse the buckets
+      LOG_ASSERT(node->type);
+      node->address.region = region;
+      node->address.offset = offset;
+      offset = offset + symtab_get_size_type(node->type);
+      switch (node->type->basetype) { // set address for class or function symtabs
+        case CLASS_T: {
+          Symtab *classtab = node->type->info.class.public;
+          if (classtab)
+            symtab_set_addresses(classtab, LOCAL_R);
+        }
+        break;
+        case FUNCTION_T: {
+          Symtab *functab = node->type->info.function.symtab;
+          if (functab)
+            symtab_set_addresses(functab, LOCAL_R);
+        }
+        break;
+        default:
+          break;
+      }
+      node = node->next;
+    }
+  }
+}
+
+int symtab_get_size_type(Type *type) {
+  int size = 0;
+  switch (type->basetype) {
+    case CLASS_INSTANCE_T:
+      LOG_ASSERT(type->info.classinstance.classtype);
+      return symtab_get_size_type(type->info.classinstance.classtype);
+    case CLASS_T:
+      LOG_ASSERT(type->info.class.public);
+      return symtab_get_size_symtab(type->info.class.public);
+    case FUNCTION_T:
+      LOG_ASSERT(type->info.function.symtab);
+      return symtab_get_size_symtab(type->info.function.symtab);
+    case ARRAY_T:
+      return (type->info.array.size * symtab_get_size_type(type->info.array.type));
+    default:
+      return type->size;
+  }
+}
+
+int symtab_get_size_symtab(Symtab *symtab) {
+  int size = 0;
+  SymtabNode *node = NULL;
+  for (int i = 0; i < SYMTAB_SIZE; i++) { // traverse the symtab
+    node = symtab->buckets[i];
+    while (node != NULL) { // traverse the buckets
+      LOG_ASSERT(node->type);
+      size += symtab_get_size_type(node->type);
+      node = node->next;
+    }
+  }
+  return size;
 }
 
 void symtab_print_table(Symtab *table, int indent) {
   LOG_ASSERT(table);
-  for (int i = 0; i < TABLE_SIZE; i++) {
+  for (int i = 0; i < SYMTAB_SIZE; i++) {
     if (table->buckets[i]) {
       for (int j = 0; j < indent; j++) {
         printf(" ");
@@ -163,19 +223,23 @@ void symtab_print_bucket(SymtabNode *node) {
     if (!firstLoop)
       node = node->next;
     if (node) {
-      printf(" -> %s(%d)", node->key, node->type->basetype);
+      printf(" -> (");
+      printf("\"%s\" t:%d ", node->key, node->type->basetype);
       switch (node->type->basetype) {
         case FUNCTION_T:
           if (node->type->info.function.parameters) {
             Parameter **params = node->type->info.function.parameters;
             for (int i = 0; i < node->type->info.function.nparams; i++) {
-              printf("-(p:%d)", params[i]->type->basetype);
+              printf("p:%d ", params[i]->type->basetype);
             }
           }
           break;
         case ARRAY_T:
-          printf("-[%d]", node->type->info.array.size);
+          printf("s:%d ", node->type->info.array.size);
       }
+      printf("w:%db ", symtab_get_size_type(node->type));
+      printf("<%d,%d>", node->address.region, node->address.offset);
+      printf(")");
     }
     firstLoop = false;
   } while (node->next);

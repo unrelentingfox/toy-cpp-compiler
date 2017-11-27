@@ -39,6 +39,10 @@ int main(int argc, char **argv) {
         if (!log_first_error) {
           sem_typecheck(astRoot, sem_global);
         }
+        // Code generation
+        if (!log_first_error) {
+          symtab_set_addresses(sem_global, GLOBAL_R);
+        }
         log_final_status();
         fclose(yyin);
         // Optional debug output

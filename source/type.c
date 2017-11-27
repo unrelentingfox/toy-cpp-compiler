@@ -9,39 +9,27 @@ static int BASETYPES_INITIALIZED;
 
 static void type_initialize_basetypes() {
   if (!BASETYPES_INITIALIZED) {
-    Type *temp;
-    temp = (Type *)malloc(sizeof(Type));
-    temp->basetype = VOID_T;
-    void_t = temp;
-    temp = (Type *)malloc(sizeof(Type));
-    temp->basetype = INT_T;
-    int_t = temp;
-    temp = (Type *)malloc(sizeof(Type));
-    temp->basetype = SHORT_T;
-    short_t = temp;
-    temp = (Type *)malloc(sizeof(Type));
-    temp->basetype = LONG_T;
-    long_t = temp;
-    temp = (Type *)malloc(sizeof(Type));
-    temp->basetype = FLOAT_T;
-    float_t = temp;
-    temp = (Type *)malloc(sizeof(Type));
-    temp->basetype = DOUBLE_T;
-    double_t = temp;
-    temp = (Type *)malloc(sizeof(Type));
-    temp->basetype = CHAR_T;
-    char_t = temp;
-    temp = (Type *)malloc(sizeof(Type));
-    temp->basetype = UNSIGNED_T;
-    unsigned_t = temp;
-    temp = (Type *)malloc(sizeof(Type));
-    temp->basetype = UNKNOWN_T;
-    unknown_t = temp;
+    void_t = type_initialize_basetype(VOID_T, 0);
+    int_t = type_initialize_basetype(INT_T, 8);
+    short_t = type_initialize_basetype(SHORT_T, 8);
+    long_t = type_initialize_basetype(LONG_T, 8);
+    float_t = type_initialize_basetype(FLOAT_T, 8);
+    double_t = type_initialize_basetype(DOUBLE_T, 8);
+    char_t = type_initialize_basetype(CHAR_T, 8);
+    unsigned_t = type_initialize_basetype(UNSIGNED_T, 8);
     // Set flag to initialied
     BASETYPES_INITIALIZED = 1;
   } else {
     return;
   }
+}
+
+static Type *type_initialize_basetype(enum BaseType basetype, int size) {
+  Type *temp;
+  temp = (Type *)malloc(sizeof(Type));
+  temp->basetype = basetype;
+  temp->size = size;
+  return temp;
 }
 
 /**
@@ -168,44 +156,6 @@ Type *type_from_terminal(enum yytokentype terminal) {
       return unknown_t;
       break;
   }
-}
-
-/**
- * @brief      depricated, please use one of the specilized helper functions.
- *
- * @param[in]  basetype  The basetype
- *
- * @return     { description_of_the_return_value }
- */
-Type *type_new(enum BaseType basetype) {
-  if (!BASETYPES_INITIALIZED)
-    type_initialize_basetypes();
-  Type *newtype = (Type *)malloc(sizeof(Type));
-  newtype->basetype = basetype;
-  switch (basetype) { /* initialize type specific info union */
-    case FUNCTION_T:
-      newtype->info.function.status = FUNC_NEW;
-      newtype->info.function.returntype = NULL;
-      newtype->info.function.nparams = 0;
-      newtype->info.function.parameters = (Parameter **)malloc(sizeof(Parameter *) * 256);
-      newtype->info.function.symtab = NULL;
-      break;
-    case CLASS_T:
-      newtype->info.class.name = NULL;
-      newtype->info.class.nFields = 0;
-      newtype->info.class.status = CLASS_NEW;
-      newtype->info.class.public = NULL;
-      newtype->info.class.private = NULL;
-      break;
-    case CLASS_INSTANCE_T:
-      newtype->info.classinstance.classtype = NULL;
-      break;
-    case ARRAY_T:
-      newtype->info.array.size = 0;
-      newtype->info.array.type = NULL;
-      break;
-  }
-  return newtype;
 }
 
 Type *type_new_function(Type *returntype) {

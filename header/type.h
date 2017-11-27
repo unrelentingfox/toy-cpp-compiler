@@ -72,6 +72,7 @@ typedef struct FunctionInfo {
 
 typedef struct Type {
   BaseType basetype;
+  int size;
   union info {
     ArrayInfo array;
     ClassInfo class;
@@ -92,10 +93,10 @@ struct Type *unknown_t;
 
 static int BASETYPES_INITIALIZED;
 static void type_initialize_basetypes();
+static Type *type_initialize_basetype(enum BaseType basetype, int size);
 Type *type_get_basetype();
 char *type_to_string(Type *type);
 struct Type *type_from_terminal(enum yytokentype terminal);
-struct Type *type_new(BaseType basetype);
 Type *type_new_function(Type *returntype);
 Type *type_new_class(char *name);
 Type *type_new_class_instance(Type *classtype);

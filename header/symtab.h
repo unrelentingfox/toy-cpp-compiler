@@ -1,7 +1,7 @@
 #ifndef SYMTAB_H
 #define SYMTAB_H
 
-#define TABLE_SIZE 100
+#define SYMTAB_SIZE 100
 
 #include "type.h"
 
@@ -11,17 +11,29 @@ enum symtabErrors {
   SYM_REDECLARED
 };
 
+enum MemoryRegion {
+  GLOBAL_R,
+  LOCAL_R,
+  PARAMETER_R
+};
+
+typedef struct MemoryAddress {
+  enum MemoryRegion region;
+  int offset;
+} Address;
+
 typedef struct SymbolTableNode {
   char *key;                    // the name of the symbol.
-  struct Type *type;                    // type info for the symbol.
+  struct Type *type;            // type info for the symbol.
+  struct MemoryAddress address; // the <region, offset> of the variable.
   struct SymbolTableNode *next; // the next node in the bucket.
 } SymtabNode;
 
 typedef struct SymbolTable {
-  struct SymbolTable *parent;     // the parent scope. If NULL then this is global scope.
-  struct Type *type;              // if the symtab is a function or class scope, the function or class type will be stored here.
-  int nNodes;                     // number of nodes stored in this table.
-  struct SymbolTableNode **buckets;  // the table itself. An array of nodes or "buckets".
+  struct SymbolTable *parent;       // the parent scope. If NULL then this is global scope.
+  struct Type *type;                // if the symtab is a function or class scope, the function or class type will be stored here.
+  int count;                        // number of nodes stored in this table.
+  struct SymbolTableNode **buckets; // the table itself. An array of nodes or "buckets".
 } Symtab;
 
 // creates a new symbol table, whose scope is local to (or inside) parent
@@ -39,6 +51,10 @@ static SymtabNode *symtab_lookup_(Symtab *table, char *key, int searchparent);
 SymtabNode *symtab_search_bucket(SymtabNode *head, char *key);
 
 int symtab_hash(char *key);
+
+int symtab_set_addresses(Symtab *symtab, enum MemoryRegion region);
+int symtab_get_size_type(struct Type *type);
+int symtab_get_size_symtab(Symtab *symtab);
 
 void symtab_print_table(Symtab *table, int indent);
 void symtab_print_bucket(SymtabNode *node);
