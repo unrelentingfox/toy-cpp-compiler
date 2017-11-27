@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "../header/nonterm.h"
 #include "../header/tree.h"
 #include "../header/semantic.h"
@@ -12,10 +13,15 @@ extern Symtab *sem_global;
 extern int log_first_error;
 extern void set_filename(char *fname);
 
+int DEBUG_SYMTAB = 0;
+int DEBUG_TREE = 0;
+
+int handle_options(int argc, char **argv);
+
 int main(int argc, char **argv) {
   log_init_global();
   if (argc > 1) {
-    for (int i = 1; i < argc; i++) {
+    for (int i = handle_options(argc, argv); i < argc; i++) {
       printf("Attempting to open \"%s\"\n", argv[i]);
       yyin = fopen(argv[i], "r");
       if (yyin) {
@@ -35,16 +41,23 @@ int main(int argc, char **argv) {
         }
         log_final_status();
         fclose(yyin);
-// optional debug output
-#ifdef DEBUG_120PP
-        printf("\nVisual Representation of hashtable:\n");
-        if (sem_global) {
-          symtab_print_table(sem_global, 0);
+        // Optional debug output
+        if (DEBUG_SYMTAB) {
+          printf("\nVisual Representation of Symbol Table:\n");
+          printf("----------------------------------------\n");
+          if (sem_global) {
+            symtab_print_table(sem_global, 0);
+          }
+          printf("----------------------------------------\n");
         }
-        if (astRoot) {
-          tree_print(astRoot, 0);
+        if (DEBUG_TREE) {
+          printf("\nVisual Representation of Parse Tree:\n");
+          printf("----------------------------------------\n");
+          if (astRoot) {
+            tree_print(astRoot, 0);
+          }
+          printf("----------------------------------------\n");
         }
-#endif
       } else {
         log_error(INTERNAL_ERROR, "Could not open \"%s\"\n", argv[i]);
       }
@@ -55,5 +68,23 @@ int main(int argc, char **argv) {
     return log_first_error;
   } else {
     return 0;
+  }
+}
+
+int handle_options(int argc, char **argv) {
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "--tree") == 0 || strcmp(argv[i], "-t") == 0) {
+      DEBUG_TREE = 1;
+    } else if (strcmp(argv[i], "--symtab") == 0 || strcmp(argv[i], "-s") == 0) {
+      DEBUG_SYMTAB = 1;
+    } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+      printf("Usage: ./120++ [options] file...\n");
+      printf("Options:\n");
+      printf("  --help   | -h    print this help text.\n");
+      printf("  --symtab | -s    print a visual representation of the symbol table.\n");
+      printf("  --tree   | -t    print a visual representation of the parse tree.\n");
+      exit(0);
+    } else
+      return i;
   }
 }
