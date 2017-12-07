@@ -77,17 +77,8 @@ int symtab_insert(Symtab *table, char *key, Type *type) {
   }
 }
 
-// lookup a symbol in a scope and its parent scopes
-// returns NULL if symbol does not exist
-SymtabNode *symtab_lookup(Symtab *table, char *key) {
-  return symtab_lookup_(table, key, 1);
-}
-// lookup a symbol only in the scope specified, not in the parent scopes.
-SymtabNode *symtab_lookup_local(Symtab *table, char *key) {
-  return symtab_lookup_(table, key, 0);
-}
 // the search function, with a flag to decide whether or not to search parent.
-static SymtabNode *symtab_lookup_(Symtab *table, char *key, int searchparent) {
+static SymtabNode *symtab_lookup_helper(Symtab *table, char *key, int searchparent) {
   LOG_ASSERT(table);
   LOG_ASSERT(key);
   int hash = symtab_hash(key) % SYMTAB_SIZE;
@@ -104,6 +95,15 @@ static SymtabNode *symtab_lookup_(Symtab *table, char *key, int searchparent) {
     return symtab_lookup(table->parent, key);
   else
     return NULL;
+}
+// lookup a symbol in a scope and its parent scopes
+// returns NULL if symbol does not exist
+SymtabNode *symtab_lookup(Symtab *table, char *key) {
+  return symtab_lookup_helper(table, key, 1);
+}
+// lookup a symbol only in the scope specified, not in the parent scopes.
+SymtabNode *symtab_lookup_local(Symtab *table, char *key) {
+  return symtab_lookup_helper(table, key, 0);
 }
 
 SymtabNode *symtab_search_bucket(SymtabNode *node, char *key) {
@@ -127,13 +127,13 @@ int symtab_hash(char *key) {
   unsigned long hash = 5381;
   int c = 0;
 
-  while (c = *key++)
+  while ((c = *key++))
     hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
   return hash % SYMTAB_SIZE;
 }
 
-int symtab_set_addresses(Symtab *symtab, enum MemoryRegion region) {
+void symtab_set_addresses(Symtab *symtab, enum MemoryRegion region) {
   int offset = 0;
   SymtabNode *node;
   for (int i = 0; i < SYMTAB_SIZE; i++) { // traverse the symtab
@@ -165,7 +165,6 @@ int symtab_set_addresses(Symtab *symtab, enum MemoryRegion region) {
 }
 
 int symtab_get_size_type(Type *type) {
-  int size = 0;
   switch (type->basetype) {
     case CLASS_INSTANCE_T:
       LOG_ASSERT(type->info.classinstance.classtype);
@@ -226,16 +225,21 @@ void symtab_print_bucket(SymtabNode *node) {
       printf(" -> (");
       printf("\"%s\" t:%d ", node->key, node->type->basetype);
       switch (node->type->basetype) {
-        case FUNCTION_T:
+        case FUNCTION_T: {
           if (node->type->info.function.parameters) {
             Parameter **params = node->type->info.function.parameters;
             for (int i = 0; i < node->type->info.function.nparams; i++) {
               printf("p:%d ", params[i]->type->basetype);
             }
           }
-          break;
-        case ARRAY_T:
+        }
+        break;
+        case ARRAY_T: {
           printf("s:%d ", node->type->info.array.size);
+        }
+        break;
+        default:
+          break;
       }
       printf("w:%db ", symtab_get_size_type(node->type));
       printf("<%d,%d>", node->address.region, node->address.offset);

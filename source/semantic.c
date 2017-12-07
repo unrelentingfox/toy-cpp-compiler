@@ -10,7 +10,7 @@
 Symtab *sem_global;
 Symtab *sem_current; /* TODO: remove global current and just make it a parameter for recursive functions */
 
-int sem_init_global() {
+void sem_init_global() {
   //TODO: create a function to free symtab before init.
   sem_global = symtab_new_table(NULL, NULL);
   sem_current = sem_global;
@@ -230,7 +230,6 @@ Symtab *sem_populate_function_definition(TreeNode *treenode, Type *type, Symtab 
         type->info.function.status = FUNC_DEFINED;
       }
     }
-
     return symtab;
     break;
     /* TODO: implement class method definitions */
@@ -242,6 +241,7 @@ Symtab *sem_populate_function_definition(TreeNode *treenode, Type *type, Symtab 
     }
     break;
   }
+  return symtab;
 }
 
 /**
@@ -337,6 +337,8 @@ int sem_populate_parameter_definition(TreeNode *treenode, Type *functype, int pa
             }
           }
         }
+        default:
+          return paramcount;
       }
     }
     paramcount++;
@@ -724,8 +726,9 @@ Type *sem_typecheck(TreeNode *treenode, Symtab *symtab) {
     }
     break;
     default:
-      return type_get_basetype(UNKNOWN_T);
+      break;
   }
+  return type_get_basetype(UNKNOWN_T);
 }
 
 /**
@@ -771,8 +774,8 @@ int sem_typecheck_function_params(TreeNode *treenode, Symtab *symtab, Type *func
       }
       return ++param;
     }
-    break;
   }
+  return -1;
 }
 
 /**
@@ -828,8 +831,10 @@ Token *sem_get_leaf(TreeNode *treenode) {
 Symtab *sem_get_function_symtab(Type *functype) {
   if (!functype || functype->basetype != FUNCTION_T)
     return NULL;
-  if (functype->info.function.symtab) {
+  else if (functype->info.function.symtab) {
     return functype->info.function.symtab;
+  } else {
+    return NULL;
   }
 }
 

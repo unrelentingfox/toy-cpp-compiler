@@ -5,8 +5,8 @@
 #include <stdlib.h>
 
 void log_init_global() {
-  int log_total_errors = 0;
-  int log_first_error = NO_ERROR;
+  log_total_errors = 0;
+  log_first_error = NO_ERROR;
 }
 
 void log_error(ErrorTypes errortype, const char *format, ...) {
@@ -20,7 +20,6 @@ void log_error(ErrorTypes errortype, const char *format, ...) {
 }
 
 void log_lex_error(char *filename, int lineno, char *message, char *token) {
-  va_list args;
   log_error(LEX_ERROR, "%s:%d:LEXICAL ERROR: Near the token '%s' %s. \n", filename, lineno, token, message);
 }
 

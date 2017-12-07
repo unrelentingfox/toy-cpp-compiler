@@ -22,10 +22,9 @@ int main(int argc, char **argv) {
   log_init_global();
   if (argc > 1) {
     for (int i = handle_options(argc, argv); i < argc; i++) {
-      printf("Attempting to open \"%s\"\n", argv[i]);
+      printf("Opening: \"%s\"\n", argv[i]);
       yyin = fopen(argv[i], "r");
       if (yyin) {
-        printf("Success.\n");
         // Change filename and reset yylineno
         set_filename(argv[i]);
         // Lexical and Syntax analysis
@@ -76,7 +75,8 @@ int main(int argc, char **argv) {
 }
 
 int handle_options(int argc, char **argv) {
-  for (int i = 1; i < argc; i++) {
+  int i;
+  for (i = 1; i < argc; i++) {
     if (strcmp(argv[i], "--tree") == 0 || strcmp(argv[i], "-t") == 0) {
       DEBUG_TREE = 1;
     } else if (strcmp(argv[i], "--symtab") == 0 || strcmp(argv[i], "-s") == 0) {
@@ -91,4 +91,5 @@ int handle_options(int argc, char **argv) {
     } else
       return i;
   }
+  return i;
 }

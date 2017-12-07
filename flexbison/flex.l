@@ -34,6 +34,7 @@
  */
 
 %option noyywrap
+%option nounput
 %x PARSE_COMMENT
 
 %{
@@ -73,8 +74,6 @@ static void lexerr(char *s);
 static void sup_error(char *message);
 static void handle_include(char* fname);
 static int set_yylval(int category);
-static void record_comment();
-static void single_line_comment();
 
 static void skip_comment(void);
 static int check_identifier(char *);
@@ -329,6 +328,7 @@ int typenametable_insert(char *s, int cat)
    tmp->category = cat;
    tmp->next = head;
    head = tmp;
+   return tmp->category;
 }
 
 static int
@@ -403,7 +403,6 @@ static void sup_error(char *message){
 static void handle_include(char* fname)
 {
    FILE *file = fopen(fname,"r");
-   YY_BUFFER_STATE buffer;
    if (file == NULL) {
      log_lex_error(filename, lineno, "can not open include file", yytext);
    } else{

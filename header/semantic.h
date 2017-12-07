@@ -4,7 +4,7 @@
 #include "tree.h"
 #include "../header/symtab.h"
 
-int sem_init_global();
+void sem_init_global();
 
 /* Functions for populating the symbol table */
 void sem_populate(TreeNode *root);

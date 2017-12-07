@@ -19,7 +19,7 @@ typedef struct TreeNode {
 TreeNode *tree_new(int nonterm, int cnum, ...);
 
 // Print the tree from node
-int tree_print(TreeNode *t, int depth);
+void tree_print(TreeNode *t, int depth);
 
 // Delete and free TreeNode and children
 void tree_free(TreeNode *root);

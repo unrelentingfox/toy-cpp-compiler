@@ -91,9 +91,6 @@ struct Type *char_t;
 struct Type *unsigned_t;
 struct Type *unknown_t;
 
-static int BASETYPES_INITIALIZED;
-static void type_initialize_basetypes();
-static Type *type_initialize_basetype(enum BaseType basetype, int size);
 Type *type_get_basetype();
 char *type_to_string(Type *type);
 struct Type *type_from_terminal(enum yytokentype terminal);

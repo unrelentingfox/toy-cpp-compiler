@@ -48,9 +48,8 @@ TreeNode *tree_new(int nonterm, int va_num, ...) {
 
 /* TODO: this function causes pointers to be overwiritten and causes the infinite loop 
  valgrind also says that memory is lost during this function. */
-int tree_print(TreeNode *node, int depth) {
+void tree_print(TreeNode *node, int depth) {
   int i;
-
   if (node && node->label < 0) {
     printf("%*s %s: %d\n", depth * 2, " ", humanReadable(node->label), node->cnum);
 
@@ -62,7 +61,6 @@ int tree_print(TreeNode *node, int depth) {
   } else if (node) {
     printf("%*s LEAF:\"%s\" %s\n", depth * 2, " ", node->token->text, humanReadable(node->label));
   }
-
 }
 
 

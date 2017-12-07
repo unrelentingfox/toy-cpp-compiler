@@ -6,6 +6,8 @@
 #define PARAM_LIMIT 22
 
 static int BASETYPES_INITIALIZED;
+static void type_initialize_basetypes();
+static Type *type_initialize_basetype(enum BaseType basetype, int size);
 
 static void type_initialize_basetypes() {
   if (!BASETYPES_INITIALIZED) {
