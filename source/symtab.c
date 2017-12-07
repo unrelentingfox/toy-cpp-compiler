@@ -223,7 +223,7 @@ void symtab_print_bucket(SymtabNode *node) {
       node = node->next;
     if (node) {
       printf(" -> (");
-      printf("\"%s\" t:%d ", node->key, node->type->basetype);
+      printf("\"%s\" t:%s ", node->key, type_to_string(node->type));
       switch (node->type->basetype) {
         case FUNCTION_T: {
           if (node->type->info.function.parameters) {
@@ -232,10 +232,6 @@ void symtab_print_bucket(SymtabNode *node) {
               printf("p:%d ", params[i]->type->basetype);
             }
           }
-        }
-        break;
-        case ARRAY_T: {
-          printf("s:%d ", node->type->info.array.size);
         }
         break;
         default:

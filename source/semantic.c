@@ -377,6 +377,8 @@ void sem_populate_declarators(TreeNode *treenode, Type *type) {
     }
     break;
     case declarator: { /* it is a pointer and a direct_declarator */
+      Type *temp = type_new_pointer(type);
+      type = temp;
       sem_populate_declarators(treenode->children[1], type);
     }
     break;
@@ -716,8 +718,7 @@ Type *sem_typecheck(TreeNode *treenode, Symtab *symtab) {
     }
     break;
     case STRING: {
-      // TODO: implement strings
-      return type_get_basetype(UNKNOWN_T);
+      return type_new_pointer(type_get_basetype(CHAR_T));
     }
     break;
     case TRUE:

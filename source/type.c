@@ -74,37 +74,50 @@ Type *type_get_basetype(enum BaseType basetype) {
   }
 }
 
+static char *type_concatinate_strings(char *a, char *b) {
+  if (a == NULL || b == NULL)
+    return strdup("");
+  int alen;
+  int blen;
+  for (alen = 0; a[alen] != '\0'; alen++) {}
+  for (blen = 0; b[blen] != '\0'; blen++) {}
+  char *destination = calloc(alen + blen + 1, sizeof(char));
+  strcat(destination, a);
+  strcat(destination, b);
+  return destination;
+}
+
 char *type_to_string(Type *type) {
   if (!type) {
     return strdup("(NULL)");
   }
   switch (type->basetype) {
     case VOID_T:
-      return strdup("Void");
+      return strdup("void");
       break;
     case INT_T:
-      return strdup("Int");
+      return strdup("int");
       break;
     case SHORT_T:
-      return strdup("Short");
+      return strdup("short");
       break;
     case LONG_T:
-      return strdup("Long");
+      return strdup("long");
       break;
     case FLOAT_T:
-      return strdup("Float");
+      return strdup("float");
       break;
     case DOUBLE_T:
-      return strdup("Double");
+      return strdup("double");
       break;
     case CHAR_T:
-      return strdup("Char");
+      return strdup("char");
       break;
     case UNSIGNED_T:
-      return strdup("Unsigned");
+      return strdup("unsigned");
       break;
     case CLASS_T:
-      return strdup("Class");;
+      return strdup("class");;
       break;
     case CLASS_INSTANCE_T: {
       LOG_ASSERT(type->info.classinstance.classtype);
@@ -113,14 +126,34 @@ char *type_to_string(Type *type) {
     }
     break;
     case FUNCTION_T:
-      return strdup("Function");
+      return strdup("function");
       break;
-    case ARRAY_T:
-      return strdup("Array");
-      break;
+    case POINTER_T: {
+      LOG_ASSERT(type->info.pointer.type);
+      char *name = type_to_string(type->info.pointer.type);
+      name = type_concatinate_strings(name, "*");
+      return name;
+    }
+    break;
+    case ARRAY_T: {
+      LOG_ASSERT(type->info.array.type);
+      char *temp1 = type_to_string(type->info.array.type);
+      int size = type->info.array.size;
+      char *sizestring = malloc(sizeof(char) * 16);
+      snprintf(sizestring, 16, "%d", size);
+      char *temp2 = type_concatinate_strings(temp1, "[");
+      free(temp1);
+      temp1 = type_concatinate_strings(temp2, sizestring);
+      free(temp2);
+      temp2 = type_concatinate_strings(temp1, "]");
+      free(sizestring);
+      free(temp1);
+      return temp2;
+    }
+    break;
     case UNKNOWN_T:
     default:
-      return strdup("Unknown");
+      return strdup("unknown");
       break;
   }
 }
@@ -160,12 +193,19 @@ Type *type_from_terminal(enum yytokentype terminal) {
   }
 }
 
-Type *type_new_function(Type *returntype) {
-  if (!returntype)
-    returntype = type_get_basetype(VOID_T);
+static Type *type_new() {
   if (!BASETYPES_INITIALIZED)
     type_initialize_basetypes();
   Type *newtype = (Type *)malloc(sizeof(Type));
+  // by default just have every type size be 8 unless otherwise changed lated
+  newtype->size = 8;
+  return newtype;
+}
+
+Type *type_new_function(Type *returntype) {
+  if (!returntype)
+    returntype = type_get_basetype(VOID_T);
+  Type *newtype = type_new();
   newtype->basetype = FUNCTION_T;
   newtype->info.function.status = FUNC_NEW;
   newtype->info.function.returntype = returntype;
@@ -182,7 +222,7 @@ Type *type_new_function(Type *returntype) {
 Type *type_new_class(char *name) {
   if (!BASETYPES_INITIALIZED)
     type_initialize_basetypes();
-  Type *newtype = (Type *)malloc(sizeof(Type));
+  Type *newtype = type_new();
   newtype->basetype = CLASS_T;
   newtype->info.class.name = strdup(name);
   newtype->info.class.nFields = 0;
@@ -195,16 +235,26 @@ Type *type_new_class(char *name) {
 Type *type_new_class_instance(Type *classtype) {
   if (!BASETYPES_INITIALIZED)
     type_initialize_basetypes();
-  Type *newtype = (Type *)malloc(sizeof(Type));
+  Type *newtype = type_new();
   newtype->basetype = CLASS_INSTANCE_T;
   newtype->info.classinstance.classtype = classtype;
   return newtype;
 }
 
+Type *type_new_pointer(Type *type) {
+  if (!BASETYPES_INITIALIZED)
+    type_initialize_basetypes();
+  Type *newtype = type_new();
+  newtype->basetype = POINTER_T;
+  newtype->info.pointer.type = type;
+  newtype->size = type->size;
+  return newtype;
+};
+
 Type *type_new_array(Type *type, int size) {
   if (!BASETYPES_INITIALIZED)
     type_initialize_basetypes();
-  Type *newtype = (Type *)malloc(sizeof(Type));
+  Type *newtype = type_new();
   newtype->basetype = ARRAY_T;
   newtype->info.array.size = size;
   newtype->info.array.type = type;
@@ -222,9 +272,11 @@ TypeCompareResults type_compare(Type *type1, Type *type2) {
     type_initialize_basetypes();
   if (!type1 || !type2)
     return TYPE_NULL_PARAMETERS;
-  if (type1 == unknown_t || type2 == unknown_t)
+  else if (type1 == unknown_t || type2 == unknown_t)
     return TYPE_NOT_EQUAL;
-  else {
+  else if (type1->basetype != type2->basetype) {
+    return TYPE_NOT_EQUAL;
+  } else {
     switch (type1->basetype) {
       case CLASS_INSTANCE_T: {
         if (type1->info.classinstance.classtype == type2->info.classinstance.classtype)
@@ -233,8 +285,16 @@ TypeCompareResults type_compare(Type *type1, Type *type2) {
           return TYPE_NOT_EQUAL;
       }
       break;
+      case POINTER_T: {
+        if (type_compare(type1->info.pointer.type, type2->info.pointer.type) == TYPE_EQUAL)
+          return TYPE_EQUAL;
+        else {
+          return TYPE_NOT_EQUAL;
+        }
+      }
+      break;
       case ARRAY_T: {
-        if (type1->info.array.type == type2->info.array.type
+        if (type_compare(type1->info.array.type, type2->info.array.type) == TYPE_EQUAL
             && type1->info.array.size == type2->info.array.size)
           return TYPE_EQUAL;
         else {

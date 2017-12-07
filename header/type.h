@@ -14,6 +14,7 @@ typedef enum BaseType {
   LONG_DOUBLE_T,
   CHAR_T,
   UNSIGNED_T,
+  POINTER_T,
   ARRAY_T,
   CLASS_T,
   CLASS_INSTANCE_T,
@@ -38,6 +39,10 @@ typedef enum TypeCompareResults {
   TYPE_EQUAL,
   TYPE_NULL_PARAMETERS
 } TypeCompareResults;
+
+typedef struct PointerInfo {
+  struct Type *type;
+} PointerInfo;
 
 typedef struct ArrayInfo {
   int size; /* allow for missing size, e.g. -1 */
@@ -74,6 +79,7 @@ typedef struct Type {
   BaseType basetype;
   int size;
   union info {
+    PointerInfo pointer;
     ArrayInfo array;
     ClassInfo class;
     FunctionInfo function;
@@ -97,6 +103,7 @@ struct Type *type_from_terminal(enum yytokentype terminal);
 Type *type_new_function(Type *returntype);
 Type *type_new_class(char *name);
 Type *type_new_class_instance(Type *classtype);
+Type *type_new_pointer(Type *type);
 Type *type_new_array(Type *type, int size);
 struct Parameter *type_new_parameter(Type *type);
 enum TypeCompareResults type_compare(Type *type1, Type *type2);
