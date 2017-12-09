@@ -9,7 +9,6 @@ int PARAM_R_COUNT;
 int CLASS_R_COUNT;
 int LABEL_R_COUNT;
 int CONST_R_COUNT;
-int TEMP_R_COUNT;
 int GLOBALS_INITIALIZED;
 
 void mem_init() {
@@ -19,7 +18,6 @@ void mem_init() {
   CLASS_R_COUNT = 0;
   LABEL_R_COUNT = 1;
   CONST_R_COUNT = 0;
-  TEMP_R_COUNT = 0;
   GLOBALS_INITIALIZED = 1;
 }
 

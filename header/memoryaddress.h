@@ -7,8 +7,7 @@ enum MemoryRegion {
   PARAM_R = 2003,
   CLASS_R = 2004,
   LABEL_R = 2005,
-  CONST_R = 2006,
-  TEMP_R = 2007
+  CONST_R = 2006
 };
 
 enum ConstantType {

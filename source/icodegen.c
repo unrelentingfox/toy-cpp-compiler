@@ -12,7 +12,7 @@ struct TACInstruction *TAC_new_instr(enum TACOperationType op, struct MemoryAddr
 struct TACList *TAC_new_list(struct TACInstruction *instr);
 
 struct TACList *TAC_concat_list(struct TACList *a, struct TACList *b);
-void TAC_append_list(struct TACList *list, struct TACInstruction *instr);
+struct TACList *TAC_append_list(struct TACList *list, struct TACInstruction *instr);
 void TAC_prepend_list(struct TACList *list, struct TACInstruction *instr);
 
 void TAC_set_symtab_addresses(Symtab *symtab, enum MemoryRegion region);
@@ -104,12 +104,15 @@ struct TACList *TAC_concat_list(struct TACList *a, struct TACList *b) {
  * @param      list   The TACList
  * @param      instr  The TACInstruction
  */
-void TAC_append_list(struct TACList *list, struct TACInstruction *instr) {
-  LOG_ASSERT(list);
-  LOG_ASSERT(instr);
-  list->tail->next = instr;
-  list->tail = instr;
-  list->count++;
+struct TACList *TAC_append_list(struct TACList *list, struct TACInstruction *instr) {
+  if (list && instr) {
+    list->tail->next = instr;
+    list->tail = instr;
+    list->count++;
+  } else if (instr) {
+    list = TAC_new_list(instr);
+  }
+  return list;
 }
 
 /**
@@ -290,7 +293,7 @@ struct MemoryAddress *TAC_new_const(union ConstantValue value, enum ConstantType
 }
 
 struct MemoryAddress *TAC_new_temp(int size) {
-  return mem_new_address(TEMP_R, size);
+  return mem_new_address(LOCAL_R, size);
 }
 
 void TAC_generate_code(TreeNode *treenode, Symtab *symtab) {
@@ -313,12 +316,27 @@ void TAC_generate_code(TreeNode *treenode, Symtab *symtab) {
       LOG_ASSERT(treenode->children[0]);
       LOG_ASSERT(treenode->children[0]->token);
       LOG_ASSERT(treenode->children[0]->token->text);
+      TAC_generate_code(treenode->children[2], symtab);
       int size = symtab_get_size_symtab(symtab);
       treenode->code = TAC_new_list(TAC_new_proc(treenode->children[0]->token->text, size));
+
     }
     break;
-    // case additive_expression: // +
-    //   break;
+    case additive_expression: // +
+      treenode->place = TAC_new_temp(8);
+      TAC_generate_code(treenode->children[0], symtab);
+      TAC_generate_code(treenode->children[2], symtab);
+      LOG_ASSERT(treenode->children[0]->place);
+      LOG_ASSERT(treenode->children[2]->place);
+      treenode->code = treenode->children[0]->code;
+      treenode->code = TAC_append_list(treenode->code, TAC_new_instr(
+                                         ADD_O,
+                                         treenode->place,
+                                         treenode->children[0]->place,
+                                         treenode->children[2]->place
+                                       ));
+      treenode->code = TAC_concat_list(treenode->code, treenode->children[2]->code);
+      break;
     // case multiplicative_expression: // *
     //   break;
     // case primary_expression:
@@ -334,7 +352,7 @@ void TAC_generate_code(TreeNode *treenode, Symtab *symtab) {
                                       treenode->children[2]->place,
                                       NULL
                                     ));
-      treenode->code = TAC_concat_list(treenode->code, treenode->children[2]->code);
+      treenode->code = TAC_concat_list(treenode->children[2]->code, treenode->code);
     }
     break;
     // case relational_expression: // > <
