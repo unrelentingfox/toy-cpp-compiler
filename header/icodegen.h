@@ -6,6 +6,7 @@
 
 #include "symtab.h"
 #include "memoryaddress.h"
+#include "tree.h"
 
 enum TACOperationType {
   /* Opcodes, per lecture notes */
@@ -40,10 +41,10 @@ enum TACOperationType {
 
 struct TACInstruction {
   enum TACOperationType op;
-  struct MemoryAddress a1;
-  struct MemoryAddress a2;
-  struct MemoryAddress a3;
-  TACInstruction *next;
+  struct MemoryAddress *a1;
+  struct MemoryAddress *a2;
+  struct MemoryAddress *a3;
+  struct TACInstruction *next;
 };
 
 struct TACList {
@@ -56,13 +57,6 @@ struct TACList {
  * Operations for Three Address Code Data types.
  * All TAC functions start with TAC_ for clarity.
  */
-struct TACInstruction *TAC_new_instr(enum TACOperationType op, struct MemoryAddress *a1, struct MemoryAddress *a2, struct MemoryAddress *a3);
-struct TACList *TAC_new_list(struct TACInstruction *instr);
-
-void TAC_concat_list(struct TACList *a, struct TACList *b);
-void TAC_append_list(struct TACList *list, struct TACInstruction *instr);
-void TAC_prepend_list(struct TACList *list, struct TACInstruction *instr);
-
-MemoryAddress *TAC_generate_labels(TreeNode *treenode, MemoryAddress *label, Symtab *symtab)
+void TAC_intermediate_code_generation(TreeNode *treenode, Symtab *symtab);
 
 #endif

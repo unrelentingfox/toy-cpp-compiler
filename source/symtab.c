@@ -133,37 +133,6 @@ int symtab_hash(char *key) {
   return hash % SYMTAB_SIZE;
 }
 
-void symtab_set_addresses(Symtab *symtab, enum MemoryRegion region) {
-  int offset = 0;
-  SymtabNode *node;
-  for (int i = 0; i < SYMTAB_SIZE; i++) { // traverse the symtab
-    node = symtab->buckets[i];
-    while (node != NULL) { // traverse the buckets
-      LOG_ASSERT(node->type);
-      node->address.region = region;
-      node->address.offset = offset;
-      offset = offset + symtab_get_size_type(node->type);
-      switch (node->type->basetype) { // set address for class or function symtabs
-        case CLASS_T: {
-          Symtab *classtab = node->type->info.class.public;
-          if (classtab)
-            symtab_set_addresses(classtab, LOCAL_R);
-        }
-        break;
-        case FUNCTION_T: {
-          Symtab *functab = node->type->info.function.symtab;
-          if (functab)
-            symtab_set_addresses(functab, LOCAL_R);
-        }
-        break;
-        default:
-          break;
-      }
-      node = node->next;
-    }
-  }
-}
-
 int symtab_get_size_type(Type *type) {
   switch (type->basetype) {
     case CLASS_INSTANCE_T:
@@ -238,7 +207,7 @@ void symtab_print_bucket(SymtabNode *node) {
           break;
       }
       printf("w:%db ", symtab_get_size_type(node->type));
-      printf("<%d,%d>", node->address.region, node->address.offset);
+      printf("<%d,%d>", node->address->region, node->address->offset);
       printf(")");
     }
     firstLoop = false;

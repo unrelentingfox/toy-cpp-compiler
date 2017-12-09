@@ -777,9 +777,9 @@ condition:
 
 
 iteration_statement:
-     WHILE '(' condition ')' statement           { $$ = tree_new(iteration_statement, 5, $1, $2, $3, $4, $5); }
-   | DO statement WHILE '(' expression ')' ';'           { $$ = tree_new(iteration_statement, 7, $1, $2, $3, $4, $5, $6, $7); }
-   | FOR '(' for_init_statement condition_opt ';' expression_opt ')' statement           { $$ = tree_new(iteration_statement, 8, $1, $2, $3, $4, $5, $6, $7, $8); }
+     WHILE '(' condition ')' statement           { $$ = tree_new(iteration_statement-1, 5, $1, $2, $3, $4, $5); }
+   | DO statement WHILE '(' expression ')' ';'           { $$ = tree_new(iteration_statement-2, 7, $1, $2, $3, $4, $5, $6, $7); }
+   | FOR '(' for_init_statement condition_opt ';' expression_opt ')' statement           { $$ = tree_new(iteration_statement-3, 8, $1, $2, $3, $4, $5, $6, $7, $8); }
    ;
 
 

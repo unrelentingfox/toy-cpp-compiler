@@ -15,7 +15,7 @@ enum symtabErrors {
 typedef struct SymbolTableNode {
   char *key;                    // the name of the symbol.
   struct Type *type;            // type info for the symbol.
-  struct MemoryAddress address; // the <region, offset> of the variable.
+  struct MemoryAddress *address; // the <region, offset> of the variable.
   struct SymbolTableNode *next; // the next node in the bucket.
 } SymtabNode;
 
@@ -41,7 +41,6 @@ SymtabNode *symtab_search_bucket(SymtabNode *head, char *key);
 
 int symtab_hash(char *key);
 
-void symtab_set_addresses(Symtab *symtab, enum MemoryRegion region);
 int symtab_get_size_type(struct Type *type);
 int symtab_get_size_symtab(Symtab *symtab);
 

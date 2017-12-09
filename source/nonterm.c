@@ -228,8 +228,14 @@ char *humanReadable(int label) {
     case condition:
       return strdup("condition");
       break;
-    case iteration_statement:
-      return strdup("iteration_statement");
+    case iteration_statement-1:
+      return strdup("iteration_statement-1");
+      break;
+    case iteration_statement-2:
+      return strdup("iteration_statement-2");
+      break;
+    case iteration_statement-3:
+      return strdup("iteration_statement-3");
       break;
     case for_init_statement:
       return strdup("for_init_statement");

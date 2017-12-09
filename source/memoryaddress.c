@@ -1,20 +1,30 @@
 #include "../header/memoryaddress.h"
 #include "../header/logger.h"
+#include <stdlib.h>
 
-static int GLOBALS_INITIALIZED;
-static void memory_address_init() {
+int GLOBAL_R_COUNT;
+int LOCAL_R_COUNT;
+int PARAM_R_COUNT;
+int CLASS_R_COUNT;
+int LABEL_R_COUNT;
+int CONST_R_COUNT;
+int TEMP_R_COUNT;
+int GLOBALS_INITIALIZED;
+
+void mem_init() {
   GLOBAL_R_COUNT = 0;
   LOCAL_R_COUNT = 0;
   PARAM_R_COUNT = 0;
   CLASS_R_COUNT = 0;
-  LABEL_R_COUNT = 0;
+  LABEL_R_COUNT = 1;
   CONST_R_COUNT = 0;
+  TEMP_R_COUNT = 0;
   GLOBALS_INITIALIZED = 1;
 }
 
-MemoryAddress *memory_address_new(enum MemoryRegion region, int size) {
+MemoryAddress *mem_new_address(enum MemoryRegion region, int size) {
   if (!GLOBALS_INITIALIZED) {
-    memory_address_init();
+    mem_init();
   }
   MemoryAddress *new_address = (MemoryAddress *)malloc(sizeof(MemoryAddress));
   switch (region) {

@@ -12,10 +12,10 @@
 typedef struct TreeNode {
   int label;
   int cnum;                                   // How many children
-  // MemoryAddress *first;
-  // MemoryAddress *follow;
-  // MemoryAddress *true;
-  // MemoryAddress *false;
+  struct MemoryAddress *first_l;
+  struct MemoryAddress *follow_l;
+  struct MemoryAddress *true_l;
+  struct MemoryAddress *false_l;
   struct TreeNode *children[MAX_CHILDREN];    // Array of child nodes size from 0..cnum
   Token *token;                               // The token if its a leaf
 } TreeNode;

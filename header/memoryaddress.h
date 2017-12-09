@@ -13,15 +13,8 @@ enum MemoryRegion {
 typedef struct MemoryAddress {
   enum MemoryRegion region;
   int offset;
-} Address;
+} MemoryAddress;
 
-int GLOBAL_R_COUNT;
-int LOCAL_R_COUNT;
-int PARAM_R_COUNT;
-int CLASS_R_COUNT;
-int LABEL_R_COUNT;
-int CONST_R_COUNT;
-
-struct MemoryAddress *memory_address_new(enum MemoryRegion region, int size);
+struct MemoryAddress *mem_new_address(enum MemoryRegion region, int size);
 
 #endif

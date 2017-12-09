@@ -2,6 +2,7 @@
 #define LOGGER_H
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #define LOG_ASSERT(val) \
   if (!val) { \

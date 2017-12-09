@@ -5,6 +5,7 @@
 #include "../header/tree.h"
 #include "../header/semantic.h"
 #include "../header/logger.h"
+#include "../header/icodegen.h"
 
 extern FILE *yyin;
 extern int yyparse();
@@ -40,7 +41,7 @@ int main(int argc, char **argv) {
         }
         // Code generation
         if (!log_first_error) {
-          symtab_set_addresses(sem_global, GLOBAL_R);
+          TAC_intermediate_code_generation(astRoot, sem_global);
         }
         log_final_status();
         fclose(yyin);
