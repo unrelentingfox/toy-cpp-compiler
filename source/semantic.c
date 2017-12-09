@@ -714,7 +714,7 @@ Type *sem_typecheck(TreeNode *treenode, Symtab *symtab) {
     }
     break;
     case FLOATING: {
-      return type_get_basetype(FLOAT_T);
+      return type_get_basetype(DOUBLE_T);
     }
     break;
     case STRING: {

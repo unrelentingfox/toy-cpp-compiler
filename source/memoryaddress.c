@@ -84,7 +84,17 @@ char *mem_address_to_str(struct MemoryAddress *address) {
       snprintf(temp, 20, "<LABEL, %d>", address->offset);
       break;
     case CONST_R:
-      snprintf(temp, 20, "<CONST, %d>", address->offset);
+      switch (address->consttype) {
+        case SVAL:
+          snprintf(temp, 20, "<CONST, %s>", address->constval.sval);
+          break;
+        case IVAL:
+          snprintf(temp, 20, "<CONST, %d>", address->constval.ival);
+          break;
+        case DVAL:
+          snprintf(temp, 20, "<CONST, %f>", address->constval.dval);
+          break;
+      }
       break;
     default:
       return strdup("(INVALID)");

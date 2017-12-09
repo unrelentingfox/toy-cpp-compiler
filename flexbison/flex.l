@@ -365,7 +365,7 @@ static int set_yylval(int category) {
     yylval.treenode->token->dval = atof(yytext);
   else
     yylval.treenode->token->dval = -1;
-  if(category == STRING)
+  if(category == STRING || category == CHARACTER)
     yylval.treenode->token->sval = strdup(yytext);
   else
     yylval.treenode->token->sval = strdup("");

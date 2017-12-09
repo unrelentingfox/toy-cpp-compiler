@@ -241,44 +241,6 @@ void TAC_set_symtab_addresses(Symtab *symtab, enum MemoryRegion region) {
   }
 }
 
-// struct MemoryAddress *TAC_get_leaf_address(TreeNode *treenode, Symtab *symtab) {
-//   if (!treenode) {
-//     return NULL;
-//   }
-//   SymtabNode *node = NULL;
-//   switch (treenode->label) {
-//     case IDENTIFIER:
-//     case CLASS_NAME:
-//       LOG_ASSERT(treenode->token->text);
-//       node = symtab_lookup(symtab, treenode->token->text);
-//       LOG_ASSERT(node->address);
-//       return node->address;
-//       break;
-//     case INTEGER:
-//       LOG_ASSERT(treenode->token->ival);
-//       return TAC_new_int_const(treenode->token->ival);
-//       break;
-//     case CHARACTER:
-//       LOG_ASSERT(treenode->token->sval);
-//       return TAC_new_string_const(treenode->token->sval);
-//       break;
-//     case FLOATING:
-//       LOG_ASSERT(treenode->token->dval);
-//       return TAC_new_float_const(treenode->token->dval);
-//       break;
-//     case STRING:
-//       LOG_ASSERT(treenode->token->sval);
-//       return TAC_new_string_const(treenode->token->sval);
-//       break;
-//     case TRUE:
-//       return TAC_new_int_const(1);
-//       break;
-//     case FALSE:
-//       return TAC_new_int_const(0);
-//       break;
-//   }
-// }
-
 struct MemoryAddress *TAC_new_label() {
   return mem_new_address(LABEL_R, 1);
 }
@@ -340,9 +302,6 @@ void TAC_generate_code(TreeNode *treenode, Symtab *symtab) {
                        );
     }
     break;
-    case direct_declarator-1:
-      treenode->code = TAC_new_list(TAC_new_instr(NEG_O, TAC_new_int_const(7), NULL, NULL));
-      break;
     // case simple_declaration-1:
     //   break;
     // case additive_expression: // +
@@ -369,8 +328,12 @@ void TAC_generate_code(TreeNode *treenode, Symtab *symtab) {
     //   break;
     // case iteration_statement:
     //   break;
-    // case jump_statement:
-    //   break;
+    case jump_statement-3:
+      LOG_ASSERT(treenode->children[1]);
+      TAC_generate_code(treenode->children[1], symtab);
+      LOG_ASSERT(treenode->children[1]->place);
+      treenode->code = TAC_new_list(TAC_new_instr(RET_O, treenode->children[1]->place, NULL, NULL));
+      break;
     /* LEAF NODES */
     case IDENTIFIER:
     case CLASS_NAME:
@@ -380,7 +343,6 @@ void TAC_generate_code(TreeNode *treenode, Symtab *symtab) {
       treenode->place = node->address;
       break;
     case INTEGER:
-      printf("FICK\n");
       //TODO: for some reason whenever 0 is an
       //integer constant ival doesn't exist?
       if (!treenode->token->ival)
@@ -407,7 +369,7 @@ void TAC_generate_code(TreeNode *treenode, Symtab *symtab) {
       break;
     default:
       for (int i = 0; i < treenode->cnum; i++) {
-        TAC_generate_code(treenode->children[0], symtab);
+        TAC_generate_code(treenode->children[i], symtab);
         treenode->code = TAC_concat_list(treenode->code, treenode->children[i]->code);
       }
   }
