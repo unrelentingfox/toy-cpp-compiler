@@ -28,6 +28,13 @@ TreeNode *tree_new(int nonterm, int va_num, ...) {
         exit(1);
       }
       ptr->label = nonterm;
+      // initalize all pointers for codegen
+      ptr->code = NULL;
+      ptr->place = NULL;
+      ptr->first_l = NULL;
+      ptr->follow_l = NULL;
+      ptr->true_l = NULL;
+      ptr->false_l = NULL;
 
       // iterate through children and add them to the new treeNode
       int i = 0;

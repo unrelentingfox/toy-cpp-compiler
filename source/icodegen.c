@@ -51,6 +51,13 @@ struct TACInstruction *TAC_new_instr(enum TACOperationType op, struct MemoryAddr
   instr->a2 = a2;
   instr->a3 = a3;
   instr->next = NULL;
+  instr->name = NULL;
+  return instr;
+}
+
+struct TACInstruction *TAC_new_proc(char *name, int size) {
+  struct TACInstruction *instr = TAC_new_instr(PROC_D, TAC_new_int_const(size), NULL, NULL);
+  instr->name = strdup(name);
   return instr;
 }
 
@@ -302,11 +309,19 @@ void TAC_generate_code(TreeNode *treenode, Symtab *symtab) {
                        );
     }
     break;
-    // case simple_declaration-1:
-    //   break;
+    case direct_declarator - 1: {
+      LOG_ASSERT(treenode->children[0]);
+      LOG_ASSERT(treenode->children[0]->token);
+      LOG_ASSERT(treenode->children[0]->token->text);
+      int size = symtab_get_size_symtab(symtab);
+      treenode->code = TAC_new_list(TAC_new_proc(treenode->children[0]->token->text, size));
+    }
+    break;
     // case additive_expression: // +
     //   break;
     // case multiplicative_expression: // *
+    //   break;
+    // case primary_expression:
     //   break;
     case assignment_expression: { // =
       TAC_generate_code(treenode->children[0], symtab);
@@ -380,9 +395,14 @@ void TAC_print_code(struct TACInstruction *instr) {
     return;
   else {
     printf("%s ", TAC_op_to_str(instr->op));
-    printf("%s ", mem_address_to_str(instr->a1));
-    printf("%s ", mem_address_to_str(instr->a2));
-    printf("%s ", mem_address_to_str(instr->a3));
+    if (instr->name)
+      printf("%s ", instr->name);
+    if (instr->a1)
+      printf("%s ", mem_address_to_str(instr->a1));
+    if (instr->a2)
+      printf("%s ", mem_address_to_str(instr->a2));
+    if (instr->a3)
+      printf("%s ", mem_address_to_str(instr->a3));
     printf("\n");
     TAC_print_code(instr->next);
   }
@@ -391,57 +411,57 @@ void TAC_print_code(struct TACInstruction *instr) {
 char *TAC_op_to_str(enum TACOperationType op) {
   switch (op) {
     case ADD_O:
-      return strdup("ADD ");
+      return strdup("     ADD");
     case SUB_O:
-      return strdup("SUB ");
+      return strdup("     SUB");
     case MUL_O:
-      return strdup("MUL ");
+      return strdup("     MUL");
     case DIV_O:
-      return strdup("DIV ");
+      return strdup("     DIV");
     case NEG_O:
-      return strdup("NEG ");
+      return strdup("     NEG");
     case ASN_O:
-      return strdup("ASN ");
+      return strdup("     ASN");
     case ADDR_O:
-      return strdup("ADDR ");
+      return strdup("     ADDR");
     case LCONT_O:
-      return strdup("LCONT ");
+      return strdup("     LCONT");
     case SCONT_O:
-      return strdup("SCONT ");
+      return strdup("     SCONT");
     case GOTO_O:
-      return strdup("GOTO ");
+      return strdup("     GOTO");
     case BLT_O:
-      return strdup("BLT ");
+      return strdup("     BLT");
     case BLE_O:
-      return strdup("BLE ");
+      return strdup("     BLE");
     case BGT_O:
-      return strdup("BGT ");
+      return strdup("     BGT");
     case BGE_O:
-      return strdup("BGE ");
+      return strdup("     BGE");
     case BEQ_O:
-      return strdup("BEQ ");
+      return strdup("     BEQ");
     case BNE_O:
-      return strdup("BNE ");
+      return strdup("     BNE");
     case BIF_O:
-      return strdup("BIF ");
+      return strdup("     BIF");
     case BNIF_O:
-      return strdup("BNIF ");
+      return strdup("     BNIF");
     case PARM_O:
-      return strdup("PARM ");
+      return strdup("     PARM");
     case CALL_O:
-      return strdup("CALL ");
+      return strdup("     CALL");
     case RET_O:
-      return strdup("RET ");
+      return strdup("     RET");
     case GLOB_D:
-      return strdup("GLOB ");
+      return strdup("GLOB");
     case PROC_D:
-      return strdup("PROC ");
+      return strdup("PROC");
     case LOCAL_D:
-      return strdup("LOCAL ");
+      return strdup("LOCAL");
     case LABEL_D:
-      return strdup("LABEL ");
+      return strdup("LABEL");
     case END_D:
-      return strdup("END ");
+      return strdup("END");
     default:
       return strdup("(INVALID)");
   }

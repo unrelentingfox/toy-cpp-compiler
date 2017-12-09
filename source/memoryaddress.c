@@ -66,7 +66,7 @@ MemoryAddress *mem_new_address(enum MemoryRegion region, int size) {
 char *mem_address_to_str(struct MemoryAddress *address) {
   if (!address)
     return strdup("");
-  char *temp = malloc(sizeof(char) * 20);
+  char *temp = calloc(20, sizeof(char));
   switch (address->region) {
     case GLOBAL_R:
       snprintf(temp, 20, "<GLOBAL, %d>", address->offset);

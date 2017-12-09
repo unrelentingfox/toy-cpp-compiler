@@ -45,6 +45,7 @@ struct TACInstruction {
   struct MemoryAddress *a2;
   struct MemoryAddress *a3;
   struct TACInstruction *next;
+  char *name;
 };
 
 struct TACList {
