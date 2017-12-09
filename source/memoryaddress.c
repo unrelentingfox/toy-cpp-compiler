@@ -1,6 +1,7 @@
 #include "../header/memoryaddress.h"
 #include "../header/logger.h"
 #include <stdlib.h>
+#include <string.h>
 
 int GLOBAL_R_COUNT;
 int LOCAL_R_COUNT;
@@ -27,6 +28,7 @@ MemoryAddress *mem_new_address(enum MemoryRegion region, int size) {
     mem_init();
   }
   MemoryAddress *new_address = (MemoryAddress *)malloc(sizeof(MemoryAddress));
+  LOG_ASSERT(new_address);
   switch (region) {
     case GLOBAL_R:
       new_address->offset = GLOBAL_R_COUNT;
@@ -59,4 +61,34 @@ MemoryAddress *mem_new_address(enum MemoryRegion region, int size) {
   }
   new_address->region = region;
   return new_address;
+}
+
+char *mem_address_to_str(struct MemoryAddress *address) {
+  if (!address)
+    return strdup("");
+  char *temp = malloc(sizeof(char) * 20);
+  switch (address->region) {
+    case GLOBAL_R:
+      snprintf(temp, 20, "<GLOBAL, %d>", address->offset);
+      break;
+    case LOCAL_R:
+      snprintf(temp, 20, "<LOCAL, %d>", address->offset);
+      break;
+    case PARAM_R:
+      snprintf(temp, 20, "<PARAM, %d>", address->offset);
+      break;
+    case CLASS_R:
+      snprintf(temp, 20, "<CLASS, %d>", address->offset);
+      break;
+    case LABEL_R:
+      snprintf(temp, 20, "<LABEL, %d>", address->offset);
+      break;
+    case CONST_R:
+      snprintf(temp, 20, "<CONST, %d>", address->offset);
+      break;
+    default:
+      return strdup("(INVALID)");
+      break;
+  }
+  return temp;
 }

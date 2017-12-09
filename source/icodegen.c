@@ -6,10 +6,12 @@
 #include "../header/type.h"
 #include "../header/nonterm.h"
 
+extern Type *sem_typecheck(TreeNode *treenode, Symtab *symtab);
+
 struct TACInstruction *TAC_new_instr(enum TACOperationType op, struct MemoryAddress *a1, struct MemoryAddress *a2, struct MemoryAddress *a3);
 struct TACList *TAC_new_list(struct TACInstruction *instr);
 
-void TAC_concat_list(struct TACList *a, struct TACList *b);
+struct TACList *TAC_concat_list(struct TACList *a, struct TACList *b);
 void TAC_append_list(struct TACList *list, struct TACInstruction *instr);
 void TAC_prepend_list(struct TACList *list, struct TACInstruction *instr);
 
@@ -17,8 +19,16 @@ void TAC_set_symtab_addresses(Symtab *symtab, enum MemoryRegion region);
 
 
 struct MemoryAddress *TAC_new_label();
+struct MemoryAddress *TAC_new_int_const(int value);
+struct MemoryAddress *TAC_new_float_const(double value);
+struct MemoryAddress *TAC_new_string_const(char *value);
+struct MemoryAddress *TAC_new_const(union ConstantValue value, enum ConstantType type);
 void TAC_generate_first(TreeNode *treenode);
 void TAC_generate_follow(TreeNode *treenode);
+void TAC_set_symtab_addresses(Symtab *symtab, enum MemoryRegion region);
+void TAC_generate_code(TreeNode *treenode, Symtab *symtab);
+void TAC_print_code(struct TACInstruction *instr);
+char *TAC_op_to_str(enum TACOperationType op);
 
 /**
  * @brief      Create a new TACInstruction.
@@ -31,9 +41,6 @@ void TAC_generate_follow(TreeNode *treenode);
  * @return     A pointer to the newly created TACInstruction.
  */
 struct TACInstruction *TAC_new_instr(enum TACOperationType op, struct MemoryAddress *a1, struct MemoryAddress *a2, struct MemoryAddress *a3) {
-  LOG_ASSERT(a1);
-  LOG_ASSERT(a2);
-  LOG_ASSERT(a3);
   struct TACInstruction *instr = malloc(sizeof(struct TACInstruction));
   if (instr == NULL) {
     log_error(INTERNAL_ERROR, "Out of memory while generating Three Address Instruction.\n");
@@ -73,12 +80,15 @@ struct TACList *TAC_new_list(struct TACInstruction *instr) {
  * @param      a     TACList a the destination list
  * @param      b     TACList b the list to append
  */
-void TAC_concat(struct TACList *a, struct TACList *b) {
-  LOG_ASSERT(a);
-  LOG_ASSERT(b);
-  a->tail->next = b->head;
-  a->tail = b->tail;
-  a->count += b->count;
+struct TACList *TAC_concat_list(struct TACList *a, struct TACList *b) {
+  if (a && b) {
+    a->tail->next = b->head;
+    a->tail = b->tail;
+    a->count += b->count;
+  } else if (b) {
+    a = b;
+  }
+  return a;
 }
 
 /**
@@ -87,7 +97,7 @@ void TAC_concat(struct TACList *a, struct TACList *b) {
  * @param      list   The TACList
  * @param      instr  The TACInstruction
  */
-void TAC_append(struct TACList *list, struct TACInstruction *instr) {
+void TAC_append_list(struct TACList *list, struct TACInstruction *instr) {
   LOG_ASSERT(list);
   LOG_ASSERT(instr);
   list->tail->next = instr;
@@ -101,7 +111,7 @@ void TAC_append(struct TACList *list, struct TACInstruction *instr) {
  * @param      list   The TACList
  * @param      instr  The TACInstruction
  */
-void TAC_prepend(struct TACList *list, struct TACInstruction *instr) {
+void TAC_prepend_list(struct TACList *list, struct TACInstruction *instr) {
   LOG_ASSERT(list);
   LOG_ASSERT(instr);
   instr->next = list->head;
@@ -114,10 +124,9 @@ void TAC_intermediate_code_generation(TreeNode *treenode, Symtab *symtab) {
   TAC_generate_first(treenode);
   TAC_generate_follow(treenode);
   TAC_set_symtab_addresses(symtab, GLOBAL_R);
-}
-
-struct MemoryAddress *TAC_new_label() {
-  return mem_new_address(LABEL_R, 1);
+  TAC_generate_code(treenode, symtab);
+  LOG_ASSERT(treenode->code);
+  TAC_print_code(treenode->code->head);
 }
 
 void TAC_generate_first(TreeNode *treenode) {
@@ -166,9 +175,6 @@ void TAC_generate_follow(TreeNode *treenode) {
     case compound_statement:
       if (treenode->children[1] != NULL)
         treenode->children[1]->follow_l = treenode->follow_l;
-      break;
-    case selection_statement:
-
       break;
     case function_definition:
       treenode->children[2]->follow_l = TAC_new_label();
@@ -235,11 +241,247 @@ void TAC_set_symtab_addresses(Symtab *symtab, enum MemoryRegion region) {
   }
 }
 
-struct TACList *TAC_generate_code(TreeNode *treenode, Symtab *symtab) {
+// struct MemoryAddress *TAC_get_leaf_address(TreeNode *treenode, Symtab *symtab) {
+//   if (!treenode) {
+//     return NULL;
+//   }
+//   SymtabNode *node = NULL;
+//   switch (treenode->label) {
+//     case IDENTIFIER:
+//     case CLASS_NAME:
+//       LOG_ASSERT(treenode->token->text);
+//       node = symtab_lookup(symtab, treenode->token->text);
+//       LOG_ASSERT(node->address);
+//       return node->address;
+//       break;
+//     case INTEGER:
+//       LOG_ASSERT(treenode->token->ival);
+//       return TAC_new_int_const(treenode->token->ival);
+//       break;
+//     case CHARACTER:
+//       LOG_ASSERT(treenode->token->sval);
+//       return TAC_new_string_const(treenode->token->sval);
+//       break;
+//     case FLOATING:
+//       LOG_ASSERT(treenode->token->dval);
+//       return TAC_new_float_const(treenode->token->dval);
+//       break;
+//     case STRING:
+//       LOG_ASSERT(treenode->token->sval);
+//       return TAC_new_string_const(treenode->token->sval);
+//       break;
+//     case TRUE:
+//       return TAC_new_int_const(1);
+//       break;
+//     case FALSE:
+//       return TAC_new_int_const(0);
+//       break;
+//   }
+// }
+
+struct MemoryAddress *TAC_new_label() {
+  return mem_new_address(LABEL_R, 1);
+}
+
+struct MemoryAddress *TAC_new_int_const(int value) {
+  union ConstantValue constval;
+  constval.ival = value;
+  return TAC_new_const(constval, IVAL);
+}
+
+struct MemoryAddress *TAC_new_float_const(double value) {
+  union ConstantValue constval;
+  constval.dval = value;
+  return TAC_new_const(constval, DVAL);
+}
+
+struct MemoryAddress *TAC_new_string_const(char *value) {
+  union ConstantValue constval;
+  constval.sval = value;
+  return TAC_new_const(constval, SVAL);
+}
+
+/* DO NOT CALL THIS FUNCTION, USE THE WRAPPER FUNCTIONS ABOVE */
+struct MemoryAddress *TAC_new_const(union ConstantValue value, enum ConstantType type) {
+  int size = 0;
+  switch (type) {
+    case IVAL:
+    case DVAL:
+      size = 8;
+      break;
+    case SVAL:
+      // TODO: count the size of the string.
+      size = 8;
+      break;
+  }
+  MemoryAddress *address = mem_new_address(CONST_R, size);
+  address->consttype = type;
+  address->constval = value;
+  return address;
+}
+
+struct MemoryAddress *TAC_new_temp(int size) {
+  return mem_new_address(TEMP_R, size);
+}
+
+void TAC_generate_code(TreeNode *treenode, Symtab *symtab) {
   if (!treenode) {
-    return NULL;
+    return;
   }
   switch (treenode->label) {
-
+    case function_definition-1: {
+      Type *functype = sem_typecheck(treenode->children[1], symtab);
+      LOG_ASSERT(functype->info.function.symtab);
+      TAC_generate_code(treenode->children[1], functype->info.function.symtab);
+      TAC_generate_code(treenode->children[2], functype->info.function.symtab);
+      treenode->code = TAC_concat_list(
+                         treenode->children[1]->code,
+                         treenode->children[2]->code
+                       );
+    }
+    break;
+    case direct_declarator-1:
+      treenode->code = TAC_new_list(TAC_new_instr(NEG_O, TAC_new_int_const(7), NULL, NULL));
+      break;
+    // case simple_declaration-1:
+    //   break;
+    // case additive_expression: // +
+    //   break;
+    // case multiplicative_expression: // *
+    //   break;
+    case assignment_expression: { // =
+      TAC_generate_code(treenode->children[0], symtab);
+      TAC_generate_code(treenode->children[2], symtab);
+      LOG_ASSERT(treenode->children[0]->place);
+      LOG_ASSERT(treenode->children[2]->place);
+      treenode->code = TAC_new_list(TAC_new_instr(
+                                      ASN_O,
+                                      treenode->children[0]->place,
+                                      treenode->children[2]->place,
+                                      NULL
+                                    ));
+      treenode->code = TAC_concat_list(treenode->code, treenode->children[2]->code);
+    }
+    break;
+    // case relational_expression: // > <
+    //   break;
+    // case equality_expression:  // ==
+    //   break;
+    // case iteration_statement:
+    //   break;
+    // case jump_statement:
+    //   break;
+    /* LEAF NODES */
+    case IDENTIFIER:
+    case CLASS_NAME:
+      LOG_ASSERT(treenode->token->text);
+      SymtabNode *node = symtab_lookup(symtab, treenode->token->text);
+      LOG_ASSERT(node->address);
+      treenode->place = node->address;
+      break;
+    case INTEGER:
+      printf("FICK\n");
+      //TODO: for some reason whenever 0 is an
+      //integer constant ival doesn't exist?
+      if (!treenode->token->ival)
+        treenode->token->ival = 0;
+      treenode->place = TAC_new_int_const(treenode->token->ival);
+      break;
+    case CHARACTER:
+      LOG_ASSERT(treenode->token->sval);
+      treenode->place = TAC_new_string_const(treenode->token->sval);
+      break;
+    case FLOATING:
+      LOG_ASSERT(treenode->token->dval);
+      treenode->place = TAC_new_float_const(treenode->token->dval);
+      break;
+    case STRING:
+      LOG_ASSERT(treenode->token->sval);
+      treenode->place = TAC_new_string_const(treenode->token->sval);
+      break;
+    case TRUE:
+      treenode->place = TAC_new_int_const(1);
+      break;
+    case FALSE:
+      treenode->place = TAC_new_int_const(0);
+      break;
+    default:
+      for (int i = 0; i < treenode->cnum; i++) {
+        TAC_generate_code(treenode->children[0], symtab);
+        treenode->code = TAC_concat_list(treenode->code, treenode->children[i]->code);
+      }
   }
 }
+
+void TAC_print_code(struct TACInstruction *instr) {
+  if (!instr)
+    return;
+  else {
+    printf("%s ", TAC_op_to_str(instr->op));
+    printf("%s ", mem_address_to_str(instr->a1));
+    printf("%s ", mem_address_to_str(instr->a2));
+    printf("%s ", mem_address_to_str(instr->a3));
+    printf("\n");
+    TAC_print_code(instr->next);
+  }
+}
+
+char *TAC_op_to_str(enum TACOperationType op) {
+  switch (op) {
+    case ADD_O:
+      return strdup("ADD ");
+    case SUB_O:
+      return strdup("SUB ");
+    case MUL_O:
+      return strdup("MUL ");
+    case DIV_O:
+      return strdup("DIV ");
+    case NEG_O:
+      return strdup("NEG ");
+    case ASN_O:
+      return strdup("ASN ");
+    case ADDR_O:
+      return strdup("ADDR ");
+    case LCONT_O:
+      return strdup("LCONT ");
+    case SCONT_O:
+      return strdup("SCONT ");
+    case GOTO_O:
+      return strdup("GOTO ");
+    case BLT_O:
+      return strdup("BLT ");
+    case BLE_O:
+      return strdup("BLE ");
+    case BGT_O:
+      return strdup("BGT ");
+    case BGE_O:
+      return strdup("BGE ");
+    case BEQ_O:
+      return strdup("BEQ ");
+    case BNE_O:
+      return strdup("BNE ");
+    case BIF_O:
+      return strdup("BIF ");
+    case BNIF_O:
+      return strdup("BNIF ");
+    case PARM_O:
+      return strdup("PARM ");
+    case CALL_O:
+      return strdup("CALL ");
+    case RET_O:
+      return strdup("RET ");
+    case GLOB_D:
+      return strdup("GLOB ");
+    case PROC_D:
+      return strdup("PROC ");
+    case LOCAL_D:
+      return strdup("LOCAL ");
+    case LABEL_D:
+      return strdup("LABEL ");
+    case END_D:
+      return strdup("END ");
+    default:
+      return strdup("(INVALID)");
+  }
+}
+

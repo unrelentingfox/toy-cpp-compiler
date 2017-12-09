@@ -12,6 +12,8 @@
 typedef struct TreeNode {
   int label;
   int cnum;                                   // How many children
+  struct TACList *code;
+  struct MemoryAddress *place;
   struct MemoryAddress *first_l;
   struct MemoryAddress *follow_l;
   struct MemoryAddress *true_l;
