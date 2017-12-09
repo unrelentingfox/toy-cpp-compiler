@@ -5,15 +5,7 @@
 #define ICODEGEN_H
 
 #include "symtab.h"
-
-enum MemoryRegion {
-  GLOBAL_R = 2001,
-  LOCAL_R = 2002,
-  PARAM_R = 2003,
-  CLASS_R = 2004,
-  LABEL_R = 2005,
-  CONST_R = 2006,
-};
+#include "memoryaddress.h"
 
 enum TACOperationType {
   /* Opcodes, per lecture notes */
@@ -46,11 +38,6 @@ enum TACOperationType {
   END_D   = 3055
 };
 
-typedef struct MemoryAddress {
-  enum MemoryRegion region;
-  int offset;
-} Address;
-
 struct TACInstruction {
   enum TACOperationType op;
   struct MemoryAddress a1;
@@ -75,5 +62,7 @@ struct TACList *TAC_new_list(struct TACInstruction *instr);
 void TAC_concat_list(struct TACList *a, struct TACList *b);
 void TAC_append_list(struct TACList *list, struct TACInstruction *instr);
 void TAC_prepend_list(struct TACList *list, struct TACInstruction *instr);
+
+MemoryAddress *TAC_generate_labels(TreeNode *treenode, MemoryAddress *label, Symtab *symtab)
 
 #endif

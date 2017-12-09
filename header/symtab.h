@@ -4,23 +4,13 @@
 #define SYMTAB_SIZE 100
 
 #include "type.h"
+#include "memoryaddress.h"
 
 enum symtabErrors {
   SYM_SUCCESS,
   SYM_FAILED,
   SYM_REDECLARED
 };
-
-enum MemoryRegion {
-  GLOBAL_R,
-  LOCAL_R,
-  PARAMETER_R
-};
-
-typedef struct MemoryAddress {
-  enum MemoryRegion region;
-  int offset;
-} Address;
 
 typedef struct SymbolTableNode {
   char *key;                    // the name of the symbol.
